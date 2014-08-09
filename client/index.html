@@ -1,0 +1,422 @@
+<link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:300,400,700' rel='stylesheet' type='text/css' />
+<style>
+body, html {
+	margin: 0;
+	padding: 0;
+}
+* {
+	font-family: 'Roboto Condensed', sans-serif;
+}
+.neighbor-container {
+	position: fixed;
+	top: 0;
+	width: 100%;
+	text-align: center;
+	background: orange;
+	
+}
+.user-container {
+	position: fixed;
+	bottom: 0;
+	width: 100%;
+	text-align: center;
+	background: rgba(0,0,255,.3);
+}
+.avatar {
+	position: relative;
+	display: inline-block;
+	text-align: center;
+	width: 130px;
+}
+
+.neighbor-container > .avatar > h1
+,.neighbor-container > .avatar > span
+,.user-container > .avatar > h1
+,.user-container > .avatar > span  {
+	margin: 0;	
+}
+
+.avatar > * {
+	width: 100%;
+}
+.avatar-pic {
+	margin: 20px auto;
+	margin-top: 10px;
+	width: 100px;
+	height: 100px;
+	background-size: cover;
+	border-radius: 50px;
+}
+</style>
+<div class="neighbor-container">
+</div>
+<div class="user-container">
+</div>
+<script type="text/template" id="avatar-template">
+<div class="avatar">
+<h1><%= name %></h1>
+<span class="id"><%= id %></span>
+<div class="avatar-pic" style="background-image:url(./user_pic/<%= image %>)">
+</div>
+</div>
+</script>
+
+<script src="./lib/rebound.min.js"></script>
+<!--
+<script src="http://code.jquery.com/jquery-2.1.1.js"></script>
+<script src="./lib/isotope.pkgd.min.js"></script>
+-->
+<script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
+<script>
+
+// Model
+function Neighbor(id){
+	this.id = id;	
+	this.name = this.getUserName(this.id);
+	this.image = this.getUserImageFileName(this.id);
+	this.spring = null;
+	this.el = null;
+	this.parent = null;
+}
+Neighbor.prototype.setDefaultSpring = function(){
+	var that = this;
+	var springSystem = new rebound.SpringSystem();
+	var spring = springSystem.createSpring(50, 3);
+	function springHandler(el, val) {	
+		el.style.mozTransform =
+		el.style.msTransform =
+		el.style.webkitTransform =
+		el.style.transform = 'scale3d(' + (1-val) + ', ' + (1-val) + ', 1)';
+	}
+	spring.addListener({
+		onSpringUpdate: function(spring) {
+			var val = spring.getCurrentValue();
+			val = rebound.MathUtil.mapValueInRange(val, 0, 1, 1, 0.5);
+			springHandler(that.el, val);
+		}
+	});	
+	this.spring = spring;
+}
+
+Neighbor.prototype.setSpring = function(springHandler){
+	var that = this;
+	var springSystem = new rebound.SpringSystem();
+	var spring = springSystem.createSpring(50, 3);
+	spring.addListener({
+		onSpringUpdate: function(spring) {
+			var val = spring.getCurrentValue();
+			val = rebound.MathUtil.mapValueInRange(val, 0, 1, 1, 0.5);
+			springHandler(that.el, val);
+		}
+	});	
+	this.spring = spring;
+}
+
+Neighbor.prototype.getIndexFromDigit = function(char){
+	var asciiVal = char.charCodeAt(0);
+	var index;
+	if(asciiVal<=57) {
+		// is Number!
+		index = asciiVal - 48;
+	} else {
+		// is Char
+		index = asciiVal - 87;
+	}
+	return index;
+} 
+
+Neighbor.prototype.getUserImageFileName = function(id) {
+	return "user-"+(this.getIndexFromDigit(id.charAt(0))+1)+".png";
+}
+Neighbor.prototype.getUserName = function(id) {
+	var gender = this.getIndexFromDigit(id.charAt(1))%2;
+	gender = (gender===0)?"Boys":"Girls";
+	var name = this.nameDictionary[gender][this.getIndexFromDigit(id.charAt(2))];
+	return name;
+}
+ 
+Neighbor.prototype.nameDictionary = {
+	"Boys":[
+		"Noah"
+		,"Liam"
+		,"Jacob"
+		,"Mason"
+		,"William"
+		,"Ethan"
+		,"Moon"
+		,"Alexander"
+		,"Jayden"
+		,"Daniel"
+		,"Elijah"
+		,"Aiden"
+		,"James"
+		,"Benjamin"
+		,"Matthew"
+		,"Jackson"
+		,"Logan"
+		,"David"
+		,"Anthony"
+		,"Joseph"
+		,"Joshua"
+		,"Andrew"
+		,"Lucas"
+		,"Brown"
+		,"Samuel"
+		,"Christopher"
+		,"John"
+		,"Isaac"
+		,"Carter"
+		,"Luke"
+		,"Hunter"
+		,"Henry"
+		,"Sebastian"
+		,"Oliver"
+		,"Cooper"
+		,"Parker"
+		],
+	"Girls":[
+		"Emma"
+		,"Sophia"
+		,"Olivia"
+		,"Isabella"
+		,"Ava"
+		,"Mia"
+		,"Emily"
+		,"Abigail"
+		,"Madison"
+		,"Elizabeth"
+		,"Charlotte"
+		,"Sally"
+		,"Sofia"
+		,"Chloe"
+		,"Ella"
+		,"Cony"
+		,"Amelia"
+		,"Natalie"
+		,"Grace"
+		,"Hannah"
+		,"Zoey"
+		,"Victoria"
+		,"Lillian"
+		,"Lily"
+		,"Brooklyn"
+		,"Samantha"
+		,"Layla"
+		,"Audrey"
+		,"Savannah"
+		,"Camila"
+		,"Aria"
+		,"Scarlett"
+		,"Sadie"
+		,"Penelope"
+		,"Caroline"
+		,"Nicole"
+		]
+};
+
+
+function App(id) {
+	this.geolocation = {};
+	this.myId = null;	
+	this.url = null;
+	this.nearbyusers = [];
+	this.me = null;
+
+	this.avatarTemplate = null;
+	this.userContainerEl = null;
+	this.neighborContainerEl = null;
+	
+	this.init(id);
+	this.start();
+	
+	// [보류] 한컴에서 여러창 띄운 경우에 대해 생각하기 TODO : 나의 최근 5개 id 를 로컬 스토리지에 계속 저장 
+	// 세션 스토리지를 쓰면 된다고 한다.
+}
+
+App.prototype._getRandomID = function(id) {
+	var id = "";
+	var possible = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+    for( var i=0; i < 17; i++ )
+        id += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return id;
+}
+
+App.prototype.init = function(id) {
+	this.myId = id?id:this._getRandomID();	
+	this.url = "http://www.heej.net/2014/airdropbox/nearbyuser.php";
+	this.me = new Neighbor(this.myId);
+	this.avatarTemplate = _.template(document.getElementById("avatar-template").innerHTML);
+	this.userContainerEl = document.querySelector(".user-container");
+	this.neighborContainerEl = document.querySelector(".neighbor-container");
+};
+
+
+// 모델의 상태에 맞게 UI를 일치시키는 작업을 수행 
+App.prototype.synchronizeUI = function() {
+	//debugger;
+	console.log("synchronizeUI executed!");	
+/*8
+	var lastFriend = this.nearbyusers[this.nearbyusers.length-1];
+		console.log(lastFriend);
+	if(lastFriend)
+		this.removeAvatar(lastFriend.el, lastFriend);
+*/		
+
+	// 상대의 아바타를 추가하거나 삭제하는 작업
+	for(var i in this.nearbyusers) {
+		if(!this.nearbyusers[i].el && this.nearbyusers[i].needToRemove !== true) {
+			this.addAvatar(this.neighborContainerEl, this.nearbyusers[i]);
+		}
+		if(this.nearbyusers[i].needToRemove === true) {
+			this.removeAvatar(this.nearbyusers[i]);
+		}	
+	}
+	
+};
+
+App.prototype.neighborRequestHandler = function(users, handler) {
+	// 상대정보를 받으면 그 정보를 모델에 적용한다.
+	// 유저 삭제 & 유지 처리 : 응답에 존재하지 않으면 상대목록 모델에서 삭제
+	console.log("neighborRequestHandler executed!");	
+
+	var nearbyusers = this.nearbyusers;
+	for( var i in nearbyusers) {
+		var isExist = false;
+		for( var j in users) {
+			if( nearbyusers[i].id === users[j].id) {
+				isExist = true;
+			}
+		}
+		if(isExist === false) {
+			//
+			nearbyusers[i].needToRemove = true;
+			//nearbyusers.splice(i, 1);
+		}
+	}
+	
+	// 유저 추가처리 : 응답에 존재하는데 목록에 없으면 상대목록 모델에 추가	
+	for( var i in users) {
+		var isExist = false;
+		for( var j in nearbyusers) {
+			// [보류] 한컴에서 여러창 띄운 경우에 대해 생각하기 TODO : 나의 최근 5개 id 를 로컬 스토리지에 서 확인하고 거기에 속하면 추가하지 않는 조건 추가  
+			// 세션 스토리지를 쓰면 된다고 한다.
+			if( users[i].id === nearbyusers[j].id) {
+				isExist = true;
+			}
+		}
+		if(isExist === false) { // 응답이 클라에  존재하지 않으면 추가
+			var newNeighbor = new Neighbor(users[i].id);
+			newNeighbor.parent = nearbyusers;
+			nearbyusers.push(newNeighbor);
+		}
+	}	
+	// 일반적인경우 this.synchronizeUI 가 실행되게 된다.
+	if(handler) handler();
+};
+
+App.prototype.start = function() {
+	console.log("start executed!");	
+
+	// 나의 위도와 경도를 확보한다.
+	this.getLocation();
+	
+	// 나의 아바타를 등장시킨다.
+	this.addAvatar(this.userContainerEl, this.me);
+	/*
+	// 연결서버에 상대유저정보요청을 보낸다.
+	this.sendRequest(
+		// XHR 상대정보 요청의 핸들러 
+		this.neighborRequestHandler.bind(this)
+	);
+	*/
+	// 이런 정보요청 -> 모델 업뎃 -> UI싱크 과정을 1초당 한번씩 수행하도록 한다.
+	var that = this;
+	var handler = this.neighborRequestHandler.bind(that);
+	setInterval(that.sendRequest.bind(that,handler),1000);
+};
+
+
+App.prototype.addAvatar = function(containerEl, neighborObj) {
+	console.log("addAvatar executed!");	
+
+	containerEl.insertAdjacentHTML('afterbegin', this.avatarTemplate(neighborObj));
+	neighborObj.el = containerEl.querySelector(".avatar"); 
+	neighborObj.setDefaultSpring();
+	neighborObj.spring.setEndValue(2);
+};
+
+App.prototype.removeAvatar = function(neighborObj) {
+	console.log("removeAvatar executed!");	
+
+	// 애니메이션 
+	//neighborObj.spring.setEndValue(0);
+	
+	// 스프링 애니메이션 콜백으로 모델에서도 삭제 
+	// 가 힘들어서 ㅠ 0.6초 후에 돔에서 지우고 모델에서 지우는걸로 ㅠㅠ
+	// 돔에서 삭제 
+	neighborObj.el.parentNode.removeChild(neighborObj.el);
+//	setTimeout(avatarEl.parentNode.removeChild.bind(avatarEl,avatarEl), 600);
+	// 모델에서 삭제
+	for(var i in this.nearbyusers) {
+		if(this.nearbyusers[i] === neighborObj) {
+			this.nearbyusers.splice(i, 1);
+		}
+	}
+};
+
+
+
+App.prototype.getLocation = function() {
+	console.log("getLocation executed!");	
+
+	if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+        (function(position){
+			this.geolocation.latitude = position.coords.latitude;
+			this.geolocation.longitude = position.coords.longitude;	     
+			this.sendRequest();
+        }).bind(this));
+    } else {
+        x.innerHTML = "Geolocation is not supported by this browser.";
+    }
+};
+
+// 연결서버에 요청을 보낸다.
+App.prototype.sendRequest = function(handler){
+	console.log("sendRequest executed!");	
+
+	// 유저의 정보를 담아 요청 보내기
+	var that = this;
+	var xmlhttp;
+	if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
+		xmlhttp=new XMLHttpRequest();
+	}
+	else{// code for IE6, IE5
+		xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+	}
+	xmlhttp.open("POST",this.url,true);
+	xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+	xmlhttp.send("id=\""+this.myId+"\"&longitude="+this.geolocation.longitude+"&latitude="+this.geolocation.latitude);	
+	xmlhttp.onreadystatechange=function(){
+		if (xmlhttp.readyState==4 && xmlhttp.status==200){	
+			var neighbors = JSON.parse(xmlhttp.responseText);
+			// 왜인지 몰라도 핸들러없이 콜백이 설정될 때가 있으므로 있을때만 요청결과 처리하도록 한다.
+			if( handler )
+				handler(neighbors,that.synchronizeUI.bind(that));
+		}
+	};	
+};
+/*
+App.prototype.ElForeach = function (array, callback, scope) {
+	console.log("ElForeach executed!");	
+
+  for (var i = 0; i < array.length; i++) {
+    callback.call(scope, i, array[i]); // passes back stuff we need
+  }
+};
+*/
+var app = new App();
+
+</script>
