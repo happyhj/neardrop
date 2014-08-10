@@ -6,21 +6,24 @@ body, html {
 }
 * {
 	font-family: 'Roboto Condensed', sans-serif;
+	color: white;
+}
+body {
+	background-image: url(./image/tweed.png);
 }
 .neighbor-container {
 	position: fixed;
-	top: 0;
+	top: 10px;
 	width: 100%;
 	text-align: center;
-	background: orange;
-	
+	1background: orange;	
 }
 .user-container {
 	position: fixed;
 	bottom: 0;
 	width: 100%;
 	text-align: center;
-	background: rgba(0,0,255,.3);
+	1background: rgba(0,0,255,.3);
 }
 .avatar {
 	position: relative;
@@ -38,6 +41,10 @@ body, html {
 
 .avatar > * {
 	width: 100%;
+	
+}
+h1 {
+	1text-shadow: 3px 2px 1px rgba(40, 40, 40, .45);
 }
 .avatar-pic {
 	margin: 20px auto;
@@ -46,6 +53,14 @@ body, html {
 	height: 100px;
 	background-size: cover;
 	border-radius: 50px;
+	
+-webkit-box-shadow: 0px 3px 2px 0px rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.45),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.45);
+-moz-box-shadow:    0px 3px 2px 0px rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.45),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.45);
+box-shadow:         0px 3px 2px 0px rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.45),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.45);
+
+}
+.blind {
+	display: none;
 }
 </style>
 <div class="neighbor-container">
@@ -55,7 +70,7 @@ body, html {
 <script type="text/template" id="avatar-template">
 <div class="avatar">
 <h1><%= name %></h1>
-<span class="id"><%= id %></span>
+<span class="id blind"><%= id %></span>
 <div class="avatar-pic" style="background-image:url(./user_pic/<%= image %>)">
 </div>
 </div>
@@ -141,71 +156,71 @@ Neighbor.prototype.nameDictionary = {
 		,"Liam"
 		,"Jacob"
 		,"Mason"
-		,"William"
+		,"Will"
 		,"Ethan"
 		,"Moon"
-		,"Alexander"
-		,"Jayden"
-		,"Daniel"
+		,"Alex"
+		,"Jay"
+		,"Dan"
 		,"Elijah"
 		,"Aiden"
 		,"James"
-		,"Benjamin"
-		,"Matthew"
-		,"Jackson"
+		,"Ben"
+		,"Matt"
+		,"Jack"
 		,"Logan"
-		,"David"
-		,"Anthony"
-		,"Joseph"
-		,"Joshua"
-		,"Andrew"
+		,"Dave"
+		,"Tony"
+		,"Joe"
+		,"Josh"
+		,"Andy"
 		,"Lucas"
 		,"Brown"
-		,"Samuel"
-		,"Christopher"
+		,"Sam"
+		,"Chris"
 		,"John"
 		,"Isaac"
 		,"Carter"
 		,"Luke"
 		,"Hunter"
 		,"Henry"
-		,"Sebastian"
+		,"Rick"
 		,"Oliver"
 		,"Cooper"
-		,"Parker"
+		,"Eddie"
 		],
 	"Girls":[
 		"Emma"
 		,"Sophia"
 		,"Olivia"
-		,"Isabella"
+		,"Lisa"
 		,"Ava"
 		,"Mia"
 		,"Emily"
-		,"Abigail"
-		,"Madison"
-		,"Elizabeth"
-		,"Charlotte"
+		,"Aby"
+		,"Maddie"
+		,"Bella"
+		,"Jill"
 		,"Sally"
 		,"Sofia"
 		,"Chloe"
 		,"Ella"
 		,"Cony"
 		,"Amelia"
-		,"Natalie"
+		,"Nat"
 		,"Grace"
 		,"Hannah"
 		,"Zoey"
-		,"Victoria"
-		,"Lillian"
+		,"Vicky"
+		,"Lilith"
 		,"Lily"
-		,"Brooklyn"
-		,"Samantha"
+		,"Brook"
+		,"Sammie"
 		,"Layla"
 		,"Audrey"
-		,"Savannah"
-		,"Camila"
-		,"Aria"
+		,"Anna"
+		,"Dana"
+		,"Aria" 
 		,"Scarlett"
 		,"Sadie"
 		,"Penelope"
