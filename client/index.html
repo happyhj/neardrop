@@ -1,3 +1,4 @@
+<meta charset="utf-8"/>
 <link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:300,400,700' rel='stylesheet' type='text/css' />
 <style>
 body, html {
@@ -42,6 +43,8 @@ body {
 	display: inline-block;
 	text-align: center;
 	width: 130px;
+	
+	1transition: background-color .1s ease;
 }
 
 .neighbor-container > .avatar > h1
@@ -58,6 +61,7 @@ body {
 h1 {
 	1text-shadow: 3px 2px 1px rgba(40, 40, 40, .45);
 }
+
 .avatar-pic {
 	margin: 20px auto;
 	margin-top: 10px;
@@ -66,14 +70,37 @@ h1 {
 	background-size: cover;
 	border-radius: 50px;
 	
--webkit-box-shadow: 0px 3px 2px 0px rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.45),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.45);
--moz-box-shadow:    0px 3px 2px 0px rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.45),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.45);
-box-shadow:         0px 3px 2px 0px rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.45),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.45);
+	-webkit-box-shadow: 0px 3px 2px 0px rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.20);
+	-moz-box-shadow:    0px 3px 2px 0px rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.20);
+	box-shadow:         0px 3px 2px 0px rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.20);
 
 }
 .blind {
 	display: none;
 }
+.avatar.dragover {
+	background-color: rgba(255,255,255,.9);
+	border-radius: 8px;
+}
+.avatar.dragover > .avatar-pic {
+	-webkit-box-shadow: 0px 3px 2px 0px rgba(40, 40, 40, 0.25),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.15),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.15);
+	-moz-box-shadow:    0px 3px 2px 0px rgba(40, 40, 40, 0.25),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.15),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.15);
+	box-shadow:         0px 3px 2px 0px rgba(40, 40, 40, 0.25),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.15),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.15);
+}
+.avatar.dragover > h1 {
+	1background-color: rgba(250,250,250,.9);
+	border-radius: 0 0 8px 8px;
+	color: black;
+}
+
+.drop-mask {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 99;
+    display: none;
+}
+
 </style>
 <div class="wave">
 <svg></svg>	
@@ -85,21 +112,30 @@ box-shadow:         0px 3px 2px 0px rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0px
 <script type="text/template" id="wave-template">
 <circle cx="<%= cx %>" cy="<%= cy %>" r="<%= r %>" stroke="<%= color %>" stroke-width="<%= width %>" stroke-opacity="<%= opacity %>" fill-opacity="0.0" />
 </script>
-<script type="text/template" id="avatar-template">
-<div class="avatar">
+<script type="text/template" id="avatar-template-me">
+<div class="avatar" id="<%= id %>">
 <h1><%= name %></h1>
 <span class="id blind"><%= id %></span>
 <div class="avatar-pic" style="background-image:url(./user_pic/<%= image %>)">
 </div>
 </div>
 </script>
-
-<script src="./lib/rebound.min.js"></script>
-<!--
+<script type="text/template" id="avatar-template-neighbor">
+<div class="avatar" id="<%= id %>">
+<div class="drop-mask"></div>
+<span class="id blind"><%= id %></span>
+<div class="avatar-pic" style="background-image:url(./user_pic/<%= image %>)">
+</div>
+<h1><%= name %></h1>
+</div>
+</script>
+<!-- addClass 와 removeClass 용 -->
 <script src="http://code.jquery.com/jquery-2.1.1.js"></script>
-<script src="./lib/isotope.pkgd.min.js"></script>
--->
+<!-- 스프링 애니메이션 용-->
+<script src="./lib/rebound.min.js"></script> 
+<!-- template 과 contanins 용-->
 <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
+
 <script>
 
 // Model
@@ -111,21 +147,24 @@ function Neighbor(id){
 	this.el = null;
 	this.parent = null;
 }
+
+// 뿅 나타나게 스타일을 컨트롤 해주는 스프링 핸들러
+Neighbor.prototype.springHandler = function(el, val){
+	el.style.mozTransform =
+	el.style.msTransform =
+	el.style.webkitTransform =
+	el.style.transform = 'scale3d(' + (1-val) + ', ' + (1-val) + ', 1)';
+};
+
 Neighbor.prototype.setDefaultSpring = function(){
 	var that = this;
 	var springSystem = new rebound.SpringSystem();
 	var spring = springSystem.createSpring(50, 3);
-	function springHandler(el, val) {	
-		el.style.mozTransform =
-		el.style.msTransform =
-		el.style.webkitTransform =
-		el.style.transform = 'scale3d(' + (1-val) + ', ' + (1-val) + ', 1)';
-	}
 	spring.addListener({
 		onSpringUpdate: function(spring) {
 			var val = spring.getCurrentValue();
 			val = rebound.MathUtil.mapValueInRange(val, 0, 1, 1, 0.5);
-			springHandler(that.el, val);
+			that.springHandler(that.el, val);
 		}
 	});	
 	this.spring = spring;
@@ -261,9 +300,6 @@ function App(id) {
 	
 	this.init(id);
 	this.start();
-	
-	// [보류] 한컴에서 여러창 띄운 경우에 대해 생각하기 TODO : 나의 최근 5개 id 를 로컬 스토리지에 계속 저장 
-	// 세션 스토리지를 쓰면 된다고 한다.
 }
 
 App.prototype._getRandomID = function(id) {
@@ -293,7 +329,9 @@ App.prototype.init = function(id) {
 	// 직전에 로그인한 내 접속이 상대방으로 나오지 않게 이전 접속id를 최신 5개까지만 기록해둠
 	this.logPreviousId();
 	
-	this.avatarTemplate = _.template(document.getElementById("avatar-template").innerHTML);
+	this.avatarTemplateMe = _.template(document.getElementById("avatar-template-me").innerHTML);
+	this.avatarTemplateNeighbor = _.template(document.getElementById("avatar-template-neighbor").innerHTML);
+
 	this.userContainerEl = document.querySelector(".user-container");
 	this.neighborContainerEl = document.querySelector(".neighbor-container");
 };
@@ -301,15 +339,6 @@ App.prototype.init = function(id) {
 
 // 모델의 상태에 맞게 UI를 일치시키는 작업을 수행 
 App.prototype.synchronizeUI = function() {
-	//debugger;
-	//console.log("synchronizeUI executed!");	
-/*8
-	var lastFriend = this.nearbyusers[this.nearbyusers.length-1];
-		console.log(lastFriend);
-	if(lastFriend)
-		this.removeAvatar(lastFriend.el, lastFriend);
-*/		
-
 	// 상대의 아바타를 추가하거나 삭제하는 작업
 	for(var i in this.nearbyusers) {
 		if(!this.nearbyusers[i].el && this.nearbyusers[i].needToRemove !== true) {
@@ -319,7 +348,6 @@ App.prototype.synchronizeUI = function() {
 			this.removeAvatar(this.nearbyusers[i]);
 		}	
 	}
-	
 };
 
 App.prototype.containsUserWithSameID = function(list, value){
@@ -342,8 +370,6 @@ App.prototype.neighborRequestHandler = function(users, handler) {
 	// 유저 추가처리 : 응답에 존재하는데 목록에 없으면 상대목록 모델에 추가	
 	for( var i in users) {
 		if(!this.containsUserWithSameID(nearbyusers,users[i])) {
-			console.log(this.getPreviousIds());
-			console.log(users[i]);
 			if(!_.contains(this.getPreviousIds(), users[i].id)) { 			
 				var newNeighbor = new Neighbor(users[i].id);
 				newNeighbor.parent = nearbyusers;
@@ -368,7 +394,9 @@ App.prototype.drawWave = function() {
 		radiusDiff_w = 120 - 120*(970-window.innerWidth)*.8/970;
 
 	if(radiusDiff_h && radiusDiff_w) {
-		radiusDiff = (radiusDiff_h<radiusDiff_w)?radiusDiff_w:radiusDiff_h;
+		radiusDiff = (radiusDiff_h>radiusDiff_w)?radiusDiff_w:radiusDiff_h;
+	} else if(radiusDiff_h || radiusDiff_w){
+		radiusDiff = radiusDiff_h||radiusDiff_w;
 	}
 	if(!radiusDiff) radiusDiff = 120;
 		
@@ -392,13 +420,10 @@ App.prototype.drawWave = function() {
 };
 
 App.prototype.start = function() {
-//	console.log("start executed!");	
-	// wave를 그린다 
 	// 첫 wave를 그리고 
 	this.drawWave();
-	// 화면사이즈가 바뀔 때 마다 다시그려주는 이벤트핸들러를 등록한다.
+	// 화면사이즈가 바뀔 때 마다 다시 wave를 그려주는 이벤트핸들러를 등록한다.
 	window.addEventListener("resize",this.drawWave);
-
 	
 	
 	
@@ -409,26 +434,63 @@ App.prototype.start = function() {
 	this.addAvatar(this.userContainerEl, this.me);
 
 	// 정보요청 -> 모델 업뎃 -> UI싱크(상대유저목록) 과정을 1초당 한번씩 수행하도록 한다.
-	var that = this;
-	var handler = this.neighborRequestHandler.bind(that);
-	setInterval(that.sendRequest.bind(that,handler),1000);
+	var handler = this.neighborRequestHandler.bind(this);
+	setInterval(this.sendRequest.bind(this,handler),1000);
 	
 };
 
+App.prototype.prepareFiletransfer = function(senderId, receiverId) {
+	var senderName = Neighbor.prototype.getUserName(senderId);
+	var receiverName = Neighbor.prototype.getUserName(receiverId);
+	alert(senderName+"가 "+receiverName+"에게 파일을 던졌습니다!");
+};
 
 App.prototype.addAvatar = function(containerEl, neighborObj) {
-	//console.log("addAvatar executed!");	
-	containerEl.insertAdjacentHTML('afterbegin', this.avatarTemplate(neighborObj));
-	neighborObj.el = containerEl.querySelector(".avatar"); 
+	var that = this;
+	var template = null;
+	
+	if(containerEl.className ==="user-container") {
+		template = this.avatarTemplateMe(neighborObj);
+	} else {
+		template = this.avatarTemplateNeighbor(neighborObj);		
+	}
+	
+	containerEl.insertAdjacentHTML('afterbegin', template);
+
+	if(containerEl.className ==="neighbor-container") {
+		var $overArea = $("#"+neighborObj.id);
+		var $dropMask = $("#"+neighborObj.id+" > .drop-mask");
+		var overArea = document.getElementById(neighborObj.id);
+		var dropMask = overArea.querySelector(".drop-mask");
+		overArea.addEventListener('dragover', function(e) {
+	        e.stopPropagation();
+	        e.preventDefault();		
+			$overArea.addClass('dragover');
+			$dropMask.show();
+		}, false);
+		dropMask.addEventListener('dragleave', function(e) {
+		    e.stopPropagation();
+			e.preventDefault();
+			$overArea.removeClass('dragover');		
+			$dropMask.hide();
+		}, false);
+		dropMask.addEventListener('drop', function(e) {
+		    e.stopPropagation();
+			e.preventDefault();
+			$overArea.removeClass('dragover');		
+			$dropMask.hide();
+				
+			// 파일 전송 시작 처리를 하는 부분	
+			that.prepareFiletransfer(that.myId, neighborObj.id);
+		}, false);
+	}
+	neighborObj.el = document.getElementById(neighborObj.id); 
 	neighborObj.setDefaultSpring();
 	neighborObj.spring.setEndValue(2);
 };
 
 App.prototype.removeAvatar = function(neighborObj) {
-	//console.log("removeAvatar executed!");	
-
 	neighborObj.el.parentNode.removeChild(neighborObj.el);
-//	setTimeout(avatarEl.parentNode.removeChild.bind(avatarEl,avatarEl), 600);
 	// 모델에서 삭제
 	for(var i in this.nearbyusers) {
 		if(this.nearbyusers[i] === neighborObj) {
@@ -436,8 +498,6 @@ App.prototype.removeAvatar = function(neighborObj) {
 		}
 	}
 };
-
-
 
 App.prototype.getLocation = function() {
 	//console.log("getLocation executed!");	
@@ -450,14 +510,14 @@ App.prototype.getLocation = function() {
 			this.sendRequest();
         }).bind(this));
     } else {
-        x.innerHTML = "Geolocation is not supported by this browser.";
+        // Geolocation 이 지원되지 않는 경우에 서비스 이용 불가 메시지를 남기고 서버로 요청 못 보내게 만들기 
+        alert("Geolocation is not supported by this browser.");
     }
 };
 
 // 연결서버에 요청을 보낸다.
 App.prototype.sendRequest = function(handler){
 	//console.log("sendRequest executed!");	
-
 	// 유저의 정보를 담아 요청 보내기
 	var that = this;
 	var xmlhttp;
@@ -479,15 +539,7 @@ App.prototype.sendRequest = function(handler){
 		}
 	};	
 };
-/*
-App.prototype.ElForeach = function (array, callback, scope) {
-	console.log("ElForeach executed!");	
 
-  for (var i = 0; i < array.length; i++) {
-    callback.call(scope, i, array[i]); // passes back stuff we need
-  }
-};
-*/
 var app = new App();
 
 </script>
