@@ -391,7 +391,9 @@ App.prototype.neighborRequestHandler = function(users, handler) {
 
 App.prototype.drawWave = function() {
 	var svgContainer = document.querySelector(".wave > svg");
-	svgContainer.innerHTML = "";
+	svgContainer.innerHTML = "!!!@#!@#!@#!@<h1>대다나다</h1>";
+
+//	svgContainer.innerHTML = "";
 	// 창의 가로세로 사이즈 구간에 따른 구의 간격변화를 구현
 	var radiusDiff = null,
 	radiusDiff_h = null ,
@@ -413,18 +415,18 @@ App.prototype.drawWave = function() {
 	// 높이를 픽셀로 구한 후에 아래에서 70픽셀 떨어진 곳이 내 아바타의 중심 
 	var centerY= (window.innerHeight-70) +"px";
 	var waveTemplate = _.template(document.getElementById("wave-template").innerHTML);
-
+	var wavePartialHTML = "";
 	for(var i=0;i<40;i++) { // 넉넉하게 40개 그림 -_-;;
-		svgContainer.insertAdjacentHTML('afterbegin', waveTemplate({
-				cx: centerX,
-				cy: centerY,
-				r: startRadius+radiusDiff*i,
-				color: "white",
-				width: 1,
-				opacity: 0.6
-			})
-		);		
-	}	
+		wavePartialHTML += waveTemplate({
+			cx: centerX,
+			cy: centerY,
+			r: startRadius+radiusDiff*i,
+			color: "white",
+			width: 1,
+			opacity: 0.6
+		});
+	}
+	svgContainer.innerHTML = wavePartialHTML;
 };
 
 App.prototype.start = function() {
@@ -501,8 +503,6 @@ App.prototype.removeAvatar = function(neighborObj) {
 };
 
 App.prototype.getLocation = function() {
-	//console.log("getLocation executed!");	
-
 	if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
         (function(position){
@@ -511,10 +511,9 @@ App.prototype.getLocation = function() {
 
 			// 정보요청 -> 모델 업뎃 -> UI싱크(상대유저목록) 과정을 1초당 한번씩 수행하도록 한다.
 			setTimeout((function() {
-				console.log("!");
 				var handler = this.neighborRequestHandler.bind(this);
 				setInterval(this.sendRequest.bind(this,handler),1000);	
-			}).bind(this), 1000);
+			}).bind(this), 1500);
         }).bind(this));
     } else {
         // Geolocation 이 지원되지 않는 경우에 서비스 이용 불가 메시지를 남기고 서버로 요청 못 보내게 만들기 
@@ -524,8 +523,6 @@ App.prototype.getLocation = function() {
 
 // 연결서버에 요청을 보낸다.
 App.prototype.sendRequest = function(handler){
-		console.log("!!");
-
 	// 유저의 정보를 담아 요청 보내기
 	var that = this;
 	var xmlhttp;
