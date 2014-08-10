@@ -4,6 +4,14 @@
 body, html {
 	margin: 0;
 	padding: 0;
+	
+	/* 드래그로 선택 안되게 하는 설정 */
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }
 * {
 	font-family: 'Roboto Condensed', sans-serif;
@@ -79,7 +87,7 @@ h1 {
 	display: none;
 }
 .avatar.dragover {
-	background-color: rgba(255,255,255,.9);
+	background-color: rgba(255,255,255,.85);
 	border-radius: 8px;
 }
 .avatar.dragover > .avatar-pic {
@@ -424,19 +432,12 @@ App.prototype.start = function() {
 	this.drawWave();
 	// 화면사이즈가 바뀔 때 마다 다시 wave를 그려주는 이벤트핸들러를 등록한다.
 	window.addEventListener("resize",this.drawWave);
-	
-	
-	
+		
 	// 나의 위도와 경도를 확보한다.
-	this.getLocation();
-	
-	// 나의 아바타를 등장시킨다.
-	this.addAvatar(this.userContainerEl, this.me);
+	this.getLocation(); // 여기에 정보요청 -> 모델 업뎃 -> UI싱크(상대유저목록) 과정을 1초당 한번씩 수행하도록 하는 콜백을 달았다.
 
-	// 정보요청 -> 모델 업뎃 -> UI싱크(상대유저목록) 과정을 1초당 한번씩 수행하도록 한다.
-	var handler = this.neighborRequestHandler.bind(this);
-	setInterval(this.sendRequest.bind(this,handler),1000);
-	
+	// 나의 아바타를 등장시킨다.
+	this.addAvatar(this.userContainerEl, this.me);	
 };
 
 App.prototype.prepareFiletransfer = function(senderId, receiverId) {
@@ -507,7 +508,13 @@ App.prototype.getLocation = function() {
         (function(position){
 			this.geolocation.latitude = position.coords.latitude;
 			this.geolocation.longitude = position.coords.longitude;	     
-			this.sendRequest();
+
+			// 정보요청 -> 모델 업뎃 -> UI싱크(상대유저목록) 과정을 1초당 한번씩 수행하도록 한다.
+			setTimeout((function() {
+				console.log("!");
+				var handler = this.neighborRequestHandler.bind(this);
+				setInterval(this.sendRequest.bind(this,handler),1000);	
+			}).bind(this), 1000);
         }).bind(this));
     } else {
         // Geolocation 이 지원되지 않는 경우에 서비스 이용 불가 메시지를 남기고 서버로 요청 못 보내게 만들기 
@@ -517,7 +524,8 @@ App.prototype.getLocation = function() {
 
 // 연결서버에 요청을 보낸다.
 App.prototype.sendRequest = function(handler){
-	//console.log("sendRequest executed!");	
+		console.log("!!");
+
 	// 유저의 정보를 담아 요청 보내기
 	var that = this;
 	var xmlhttp;
@@ -529,9 +537,9 @@ App.prototype.sendRequest = function(handler){
 	}
 	xmlhttp.open("POST",this.url,true);
 	xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-	xmlhttp.send("id=\""+this.myId+"\"&longitude="+this.geolocation.longitude+"&latitude="+this.geolocation.latitude);	
-	xmlhttp.onreadystatechange=function(){
-		if (xmlhttp.readyState==4 && xmlhttp.status==200){	
+	xmlhttp.send("cmd=getNeighbors&id="+this.myId+"&longitude="+this.geolocation.longitude+"&latitude="+this.geolocation.latitude);	
+	xmlhttp.onreadystatechange = function(){
+		if (xmlhttp.readyState==4 && xmlhttp.status==200 && xmlhttp.responseText.length>0){
 			var neighbors = JSON.parse(xmlhttp.responseText);
 			// 왜인지 몰라도 핸들러없이 콜백이 설정될 때가 있으므로 있을때만 요청결과 처리하도록 한다.
 			if( handler )
@@ -540,6 +548,22 @@ App.prototype.sendRequest = function(handler){
 	};	
 };
 
+// 현재는 내 아이디가 자동생성이지만 
+// 인자로 내 아이디를 넘기면서 APP을 생성해야 한다.
 var app = new App();
+
+// 창이 닫힐때 내 아이디를 서버에서 지워달라는 요청을 보냄 
+window.onbeforeunload = function () {
+	var xmlhttp;
+	if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
+		xmlhttp=new XMLHttpRequest();
+	}
+	else{// code for IE6, IE5
+		xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+	}
+	xmlhttp.open("POST",app.url,true);
+	xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+	xmlhttp.send("cmd=deleteMe&id="+this.myId);	
+};
 
 </script>
