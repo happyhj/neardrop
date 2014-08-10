@@ -257,11 +257,24 @@ App.prototype._getRandomID = function(id) {
 
     return id;
 }
-
+App.prototype.logPreviousId = function() {
+	var prev_id = JSON.parse(sessionStorage["prev_id"]||"[]");
+	prev_id.push(this.me.id);
+	if(prev_id.length > 5) prev_id.shift();
+	sessionStorage["prev_id"] = JSON.stringify(prev_id);
+}
+App.prototype.getPreviousIds = function() {
+	var prev_id = JSON.parse(sessionStorage["prev_id"]||"[]");
+	return prev_id;
+}
 App.prototype.init = function(id) {
 	this.myId = id?id:this._getRandomID();	
 	this.url = "http://www.heej.net/2014/airdropbox/nearbyuser.php";
 	this.me = new Neighbor(this.myId);
+	
+	// 직전에 로그인한 내 접속이 상대방으로 나오지 않게 이전 접속id를 최신 5개까지만 기록해둠
+	this.logPreviousId();
+	
 	this.avatarTemplate = _.template(document.getElementById("avatar-template").innerHTML);
 	this.userContainerEl = document.querySelector(".user-container");
 	this.neighborContainerEl = document.querySelector(".neighbor-container");
@@ -271,7 +284,7 @@ App.prototype.init = function(id) {
 // 모델의 상태에 맞게 UI를 일치시키는 작업을 수행 
 App.prototype.synchronizeUI = function() {
 	//debugger;
-	console.log("synchronizeUI executed!");	
+	//console.log("synchronizeUI executed!");	
 /*8
 	var lastFriend = this.nearbyusers[this.nearbyusers.length-1];
 		console.log(lastFriend);
@@ -291,62 +304,49 @@ App.prototype.synchronizeUI = function() {
 	
 };
 
+App.prototype.containsUserWithSameID = function(list, value){
+	// 엘리먼트의 id만 비교해서 포함하는지 체크한다.
+	var idList = [];
+	for(var i in list) {
+		idList.push(list[i].id);
+	}
+	return _.contains(idList, value.id);
+} 
+
 App.prototype.neighborRequestHandler = function(users, handler) {
 	// 상대정보를 받으면 그 정보를 모델에 적용한다.
 	// 유저 삭제 & 유지 처리 : 응답에 존재하지 않으면 상대목록 모델에서 삭제
-	console.log("neighborRequestHandler executed!");	
-
 	var nearbyusers = this.nearbyusers;
 	for( var i in nearbyusers) {
-		var isExist = false;
-		for( var j in users) {
-			if( nearbyusers[i].id === users[j].id) {
-				isExist = true;
-			}
-		}
-		if(isExist === false) {
-			//
+		if(!this.containsUserWithSameID(users,nearbyusers[i]))
 			nearbyusers[i].needToRemove = true;
-			//nearbyusers.splice(i, 1);
-		}
-	}
-	
+	}	
 	// 유저 추가처리 : 응답에 존재하는데 목록에 없으면 상대목록 모델에 추가	
 	for( var i in users) {
-		var isExist = false;
-		for( var j in nearbyusers) {
-			// [보류] 한컴에서 여러창 띄운 경우에 대해 생각하기 TODO : 나의 최근 5개 id 를 로컬 스토리지에 서 확인하고 거기에 속하면 추가하지 않는 조건 추가  
-			// 세션 스토리지를 쓰면 된다고 한다.
-			if( users[i].id === nearbyusers[j].id) {
-				isExist = true;
+		if(!this.containsUserWithSameID(nearbyusers,users[i])) {
+			console.log(this.getPreviousIds());
+			console.log(users[i]);
+			if(!_.contains(this.getPreviousIds(), users[i].id)) { 			
+				var newNeighbor = new Neighbor(users[i].id);
+				newNeighbor.parent = nearbyusers;
+				nearbyusers.push(newNeighbor);
 			}
-		}
-		if(isExist === false) { // 응답이 클라에  존재하지 않으면 추가
-			var newNeighbor = new Neighbor(users[i].id);
-			newNeighbor.parent = nearbyusers;
-			nearbyusers.push(newNeighbor);
-		}
+		} 
 	}	
 	// 일반적인경우 this.synchronizeUI 가 실행되게 된다.
 	if(handler) handler();
 };
 
 App.prototype.start = function() {
-	console.log("start executed!");	
+//	console.log("start executed!");	
 
 	// 나의 위도와 경도를 확보한다.
 	this.getLocation();
 	
 	// 나의 아바타를 등장시킨다.
 	this.addAvatar(this.userContainerEl, this.me);
-	/*
-	// 연결서버에 상대유저정보요청을 보낸다.
-	this.sendRequest(
-		// XHR 상대정보 요청의 핸들러 
-		this.neighborRequestHandler.bind(this)
-	);
-	*/
-	// 이런 정보요청 -> 모델 업뎃 -> UI싱크 과정을 1초당 한번씩 수행하도록 한다.
+
+	// 정보요청 -> 모델 업뎃 -> UI싱크(상대유저목록) 과정을 1초당 한번씩 수행하도록 한다.
 	var that = this;
 	var handler = this.neighborRequestHandler.bind(that);
 	setInterval(that.sendRequest.bind(that,handler),1000);
@@ -354,8 +354,7 @@ App.prototype.start = function() {
 
 
 App.prototype.addAvatar = function(containerEl, neighborObj) {
-	console.log("addAvatar executed!");	
-
+	//console.log("addAvatar executed!");	
 	containerEl.insertAdjacentHTML('afterbegin', this.avatarTemplate(neighborObj));
 	neighborObj.el = containerEl.querySelector(".avatar"); 
 	neighborObj.setDefaultSpring();
@@ -363,14 +362,8 @@ App.prototype.addAvatar = function(containerEl, neighborObj) {
 };
 
 App.prototype.removeAvatar = function(neighborObj) {
-	console.log("removeAvatar executed!");	
+	//console.log("removeAvatar executed!");	
 
-	// 애니메이션 
-	//neighborObj.spring.setEndValue(0);
-	
-	// 스프링 애니메이션 콜백으로 모델에서도 삭제 
-	// 가 힘들어서 ㅠ 0.6초 후에 돔에서 지우고 모델에서 지우는걸로 ㅠㅠ
-	// 돔에서 삭제 
 	neighborObj.el.parentNode.removeChild(neighborObj.el);
 //	setTimeout(avatarEl.parentNode.removeChild.bind(avatarEl,avatarEl), 600);
 	// 모델에서 삭제
@@ -384,7 +377,7 @@ App.prototype.removeAvatar = function(neighborObj) {
 
 
 App.prototype.getLocation = function() {
-	console.log("getLocation executed!");	
+	//console.log("getLocation executed!");	
 
 	if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -400,7 +393,7 @@ App.prototype.getLocation = function() {
 
 // 연결서버에 요청을 보낸다.
 App.prototype.sendRequest = function(handler){
-	console.log("sendRequest executed!");	
+	//console.log("sendRequest executed!");	
 
 	// 유저의 정보를 담아 요청 보내기
 	var that = this;
