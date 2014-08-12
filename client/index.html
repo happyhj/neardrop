@@ -143,17 +143,22 @@ h1 {
 <script src="./lib/rebound.min.js"></script> 
 <!-- template 과 contanins 용-->
 <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
+<!-- peer 연결용 -->
+<script type="text/javascript" src="./lib/peer.min.js"></script>
 
 <script>
 
 // Model
-function Neighbor(id){
+function Neighbor(id, me){
+	// me임을 확인하기 위한 flag
+	this.me = me;
+
 	this.id = id;	
-	this.name = this.getUserName(this.id);
-	this.image = this.getUserImageFileName(this.id);
+	this.name = this.getUserName(id);
+	this.image = this.getUserImageFileName(id);
 	this.spring = null;
 	this.el = null;
-	this.parent = null;
+	// this.parent = null;
 }
 
 // 뿅 나타나게 스타일을 컨트롤 해주는 스프링 핸들러
@@ -295,70 +300,332 @@ Neighbor.prototype.nameDictionary = {
 };
 
 
-function App(id) {
-	this.geolocation = {};
-	this.myId = null;	
-	this.url = null;
-	this.nearbyusers = [];
-	this.me = null;
-
-	this.avatarTemplate = null;
-	this.userContainerEl = null;
-	this.neighborContainerEl = null;
-	
-	this.init(id);
-	this.start();
+// EventEmitter
+function EventEmitter() {
+	this.events = [];
 }
-
-App.prototype._getRandomID = function(id) {
-	var id = "";
-	var possible = "abcdefghijklmnopqrstuvwxyz0123456789";
-
-    for( var i=0; i < 17; i++ )
-        id += possible.charAt(Math.floor(Math.random() * possible.length));
-
-    return id;
-}
-App.prototype.logPreviousId = function() {
-	var prev_id = JSON.parse(sessionStorage["prev_id"]||"[]");
-	prev_id.push(this.me.id);
-	if(prev_id.length > 5) prev_id.shift();
-	sessionStorage["prev_id"] = JSON.stringify(prev_id);
-}
-App.prototype.getPreviousIds = function() {
-	var prev_id = JSON.parse(sessionStorage["prev_id"]||"[]");
-	return prev_id;
-}
-App.prototype.init = function(id) {
-	this.myId = id?id:this._getRandomID();	
-	this.url = "http://www.heej.net/2014/airdropbox/nearbyuser.php";
-	this.me = new Neighbor(this.myId);
-	
-	// 직전에 로그인한 내 접속이 상대방으로 나오지 않게 이전 접속id를 최신 5개까지만 기록해둠
-	this.logPreviousId();
-	
-	this.avatarTemplateMe = _.template(document.getElementById("avatar-template-me").innerHTML);
-	this.avatarTemplateNeighbor = _.template(document.getElementById("avatar-template-neighbor").innerHTML);
-
-	this.userContainerEl = document.querySelector(".user-container");
-	this.neighborContainerEl = document.querySelector(".neighbor-container");
+EventEmitter.prototype.on = function(fn) {
+	this.events.push(fn);
 };
-
-
-// 모델의 상태에 맞게 UI를 일치시키는 작업을 수행 
-App.prototype.synchronizeUI = function() {
-	// 상대의 아바타를 추가하거나 삭제하는 작업
-	for(var i in this.nearbyusers) {
-		if(!this.nearbyusers[i].el && this.nearbyusers[i].needToRemove !== true) {
-			this.addAvatar(this.neighborContainerEl, this.nearbyusers[i]);
+EventEmitter.prototype.off = function(fn) {
+	var newEvents = [];
+	for (var i=0, len=this.events.length; i<len; ++i) {
+		var curEvent = this.events[i];
+		if (curEvnet !== fn) {
+			newEvents.push(curEvnet);
 		}
-		if(this.nearbyusers[i].needToRemove === true) {
-			this.removeAvatar(this.nearbyusers[i]);
-		}	
+	}
+	this.events = newEvents;
+};
+EventEmitter.prototype.trigger = function() {
+
+	for (var i=0, len=this.events.length; i<len; ++i) {
+		this.events[i](arguments);
 	}
 };
 
-App.prototype.containsUserWithSameID = function(list, value){
+
+// AirDrop service model
+function AirDrop(args) {
+	// me
+	this.me = null;
+
+	// Neighbors
+	this.nearByMe = {};
+
+	// peer 객체
+	this.peer = new Peer({key: 'lwjd5qra8257b9'});
+
+	// connection을 가진 id
+	this.connectedPeers = {};
+
+	// eventEmitter
+	this.eventEmitter = {
+		'adduser': new EventEmitter(),
+		'removeuser': new EventEmitter()
+	};
+
+	// 초기화
+	this._init(args);
+
+	// 종료시 호출 요청
+	window.onbeforeunload = this._destory.bind(this);
+}
+
+
+// AirDrop객체 초기화
+AirDrop.prototype._init = function(args) {
+	this.url = args.url;
+
+	// 내 peer 생성
+	this.peer.on('open', function(id) {
+		// debugger;
+		this._createMe(id);
+		// 직전에 로그인한 내 접속이 상대방으로 나오지 않게 이전 접속id를 최신 5개까지만 기록해둠
+		this._logPreviousId(id);
+
+		// 나의 위도와 경도를 확보한다.
+		// 여기에 정보요청 -> 모델 업뎃 -> UI싱크(상대유저목록) 과정을 1초당 한번씩 수행하도록 하는 콜백을 달았다.
+		this._getLocation();
+
+	}.bind(this));
+
+	// 나에게 connection 요청시
+	this.peer.on('connection', this._connect);
+
+};
+
+
+// 창이 닫히는 경우 자동적으로 내 정보를 지울 수 있도록 요청한다
+AirDrop.prototype._destory = function() {
+	// debugger;
+	// mypeer connection 종료, signaling server와 종료
+	if (!!this.peer && !this.peer.destroyed) {
+		this.peer.destroy();
+	}
+
+	// server에서 내 정보 삭제
+	var myId = this.me.id;
+	var xmlhttp = this._getXMLHttp();
+	
+	xmlhttp.open("POST",this.url,true);
+	xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+	xmlhttp.send("cmd=deleteMe&id="+myId);
+};
+
+
+
+// public
+AirDrop.prototype.send = function(targetEl, file) {
+	// targetId 가져오기
+	var id = this._getIdByEl(targetEl);
+
+	// 연결되지 않았던 peer의 경우
+	if (id !== undefined && this.connectedPeers[id] === undefined) {
+		// debugger;
+		// file 이름을 가진 connection 생성, (remotePeer);
+		var remotePeer = this.peer.connect(id, { label: 'file' });
+
+
+		// // open 이벤트 발생시 connect 함수 호출
+		remotePeer.on('open', function() {
+			console.log('remotepeer open');
+			// 상대방이 연결될 수 있도록 정보를 전달함
+			this._connect(remotePeer);
+			// file 전송
+			this._send(remotePeer, file);
+		}.bind(this));
+
+
+		// error 이벤트 발생시 err 경고
+		remotePeer.on('error', function(err) {
+			console.warn('remotepeer error: ' + err);
+		});
+
+
+		// 종료시
+		remotePeer.on('close', function(id) {
+			console.log('remotepeer close');
+
+			this._closeConnection(id);
+		}.bind(this, id));
+
+
+		// chat과 file connection을 모두 생성했다면 connectedPeers에 id key값에 1을 넣음
+		this.connectedPeers[id] = remotePeer;
+	}	
+};
+
+// public
+AirDrop.prototype.on = function(evtName, fn) {
+	// eventEmitter key에 존재시 사용
+	if (this.eventEmitter[evtName]) {
+		this.eventEmitter[evtName].on(fn);	
+	}
+};
+
+// public
+AirDrop.prototype.off = function(evtName, fn) {
+	// eventEmitter key에 존재시 사용
+	if (this.eventEmitter[evtName]) {
+		this.eventEmitter[evtName].off(fn);	
+	}
+};
+
+AirDrop.prototype._send = function(remotePeer, file) {
+
+	var result = confirm(file.name + '(' + Math.floor(file.size/1024) +'Kb, ' + file.type + ') 을(를) 전송하시겠습니까?');
+	if (result === true) {
+		// 연결된 객체에 file을 전송
+		remotePeer.send(file);
+
+		// 기타 작업을 수행할 수도 있음
+
+	} else {
+		console.log('파일 전송을 거부하셨습니다.');
+
+	}	
+};
+
+
+AirDrop.prototype._connect = function (c) {
+	
+	c.on('data', function(data){
+		var result = confirm(c.peer + '님의 파일을 전송받겠습니까?');
+
+		if (result === true) {
+			if (data.constructor === ArrayBuffer) {
+				var dataView = new Uint8Array(data);
+				// var dataBlob = new Blob([dataView], {type: 'application/octet-binary'});
+				var dataBlob = new Blob([dataView], {type: 'image/png'});
+
+
+				var url = window.URL.createObjectURL(dataBlob);
+				// 자동으로 file download 될 수 있도록 변경
+				console.log(c.peer + ',  url: ' + url);
+
+
+				// blob 해제
+				// window.URL.revokeObjectURL(url);
+			}
+
+		} else {
+			console.log('파일 전송을 거부하셨습니다.');
+
+		}
+
+	}.bind(this));
+
+};
+
+
+AirDrop.prototype._createMe = function(id) {
+	var me = new Neighbor(id, true);
+	this.me = me;
+	this.eventEmitter.adduser.trigger(me);
+};
+
+AirDrop.prototype._closeConnection = function(id) {
+	var remotePeer = this.connectedPeers[id];
+	if (remotePeer !== undefined) {
+		// connection 종료
+		remotePeer.close();
+
+		// user 삭제
+		this._removeUser(id);
+	}
+};
+
+AirDrop.prototype._addUser = function(id) {
+	// debugger;
+	var nearByMe = this.nearByMe;
+
+	// others에서 존재여부를 확인
+	if (!nearByMe.hasOwnProperty(id)) {
+		nearByMe[id] = new Neighbor(id);
+		// avatar 추가
+		this.eventEmitter.adduser.trigger(nearByMe[id]);
+	}
+};
+
+AirDrop.prototype._removeUser = function(id) {
+	var nearByMe = this.nearByMe;
+
+	// 기존 존재하는 유저를 삭제한다.
+	if (nearByMe[id] !== undefined) {
+		// avatar 제거
+		this.eventEmitter.removeuser.trigger(nearByMe[id]);
+		delete nearByMe[id];
+	}
+};
+
+
+// user location 정보를 server에 전달하여 가까운 곳에 있는 user정보를 받아온다
+AirDrop.prototype._sendRequest = function(coords) {
+	var myId = this.me.id;
+
+	// 유저의 정보를 담아 요청 보내기
+	var xmlhttp = this._getXMLHttp();
+
+	xmlhttp.open("POST", this.url, true);
+	xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+	xmlhttp.send("cmd=getNeighbors&id="+myId+"&longitude="+coords.longitude+"&latitude="+coords.latitude);	
+	xmlhttp.onreadystatechange = function(){
+		if (xmlhttp.readyState==4 && xmlhttp.status==200 && xmlhttp.responseText.length>0){
+			var neighbors = JSON.parse(xmlhttp.responseText);
+			// 왜인지 몰라도 핸들러없이 콜백이 설정될 때가 있으므로 있을때만 요청결과 처리하도록 한다.
+
+			// handler를 조금 더 깔끔하게 처리할 수 있을 것 같음
+			// if (handler) handler(neighbors);
+			this._requestHandler(neighbors);
+		}
+	}.bind(this);
+};
+
+
+
+// server로부터 전달받은 정보를 처리하는 handler
+AirDrop.prototype._requestHandler = function(users) {
+	// 상대정보를 받으면 그 정보를 모델에 적용한다.
+	var nearByMe = this.nearByMe;
+	var myId = this.me.id;
+
+	// 내 id 정보를 삭제한다.
+	delete users[myId];
+
+
+	// 유저 삭제 & 유지 처리 : 응답에 존재하지 않으면 상대목록 모델에서 삭제
+	// debugger;
+	for(var id in nearByMe) {
+		if(!this._containsUserWithSameID(users, nearByMe[id]))
+			this._removeUser(id);
+	}
+
+
+	// 유저 추가처리 : 응답에 존재하는데 목록에 없으면 상대목록 모델에 추가	
+	users.forEach(function(user) {
+		var id = user.id;
+		// nearByMe에 요청받은 id가 존재하지 않는 경우 추가
+		if(!_.contains(this._getPreviousIds(), id)) {
+			this._addUser(id);
+
+			// var newNeighbor = new Neighbor(users[i].id);
+			// ??? 이건 어떤 코드죠??
+			// newNeighbor.parent = nearbyusers;
+			// nearbyusers.push(newNeighbor);
+		}		
+	}.bind(this));	
+};
+
+// 현재 위치정보를 불러와 주변 user를 갱신할 수 있는 기본 자료로 사용한다.
+AirDrop.prototype._getLocation = function() {
+	function success(pos) {
+		// 정보요청 -> 모델 업뎃 -> UI싱크(상대유저목록) 과정을 1초당 한번씩 수행하도록 한다.
+		setInterval(this._sendRequest.bind(this, pos.coords), 1000);	
+	}
+
+	function error(err) {
+		console.warn('geolocation error(' + err.code + '): ' + err.message);
+	}
+
+	var options = {
+		enableHighAccuracy: true,
+		timeout: 10000,
+		maximumAge: 0
+	};
+
+	if (navigator.geolocation) {
+		navigator.geolocation.getCurrentPosition(success.bind(this), error, options);
+
+	// Geolocation 이 지원되지 않는 경우에 서비스 이용 불가 메시지를 남기고 서버로 요청 못 보내게 만들기 
+	} else {
+		alert("Geolocation is not supported by this browser.");
+
+	}
+};
+
+
+AirDrop.prototype._containsUserWithSameID = function(list, value){
 	// 엘리먼트의 id만 비교해서 포함하는지 체크한다.
 	var idList = [];
 	for(var i in list) {
@@ -367,26 +634,146 @@ App.prototype.containsUserWithSameID = function(list, value){
 	return _.contains(idList, value.id);
 } 
 
-App.prototype.neighborRequestHandler = function(users, handler) {
-	// 상대정보를 받으면 그 정보를 모델에 적용한다.
-	// 유저 삭제 & 유지 처리 : 응답에 존재하지 않으면 상대목록 모델에서 삭제
-	var nearbyusers = this.nearbyusers;
-	for( var i in nearbyusers) {
-		if(!this.containsUserWithSameID(users,nearbyusers[i]))
-			nearbyusers[i].needToRemove = true;
-	}	
-	// 유저 추가처리 : 응답에 존재하는데 목록에 없으면 상대목록 모델에 추가	
-	for( var i in users) {
-		if(!this.containsUserWithSameID(nearbyusers,users[i])) {
-			if(!_.contains(this.getPreviousIds(), users[i].id)) { 			
-				var newNeighbor = new Neighbor(users[i].id);
-				newNeighbor.parent = nearbyusers;
-				nearbyusers.push(newNeighbor);
-			}
-		} 
-	}	
-	// 일반적인경우 this.synchronizeUI 가 실행되게 된다.
-	if(handler) handler();
+
+AirDrop.prototype._logPreviousId = function(id) {
+	var prev_id = JSON.parse(sessionStorage["prev_id"]||"[]");
+	prev_id.push(id);
+	if(prev_id.length > 5) prev_id.shift();
+	sessionStorage["prev_id"] = JSON.stringify(prev_id);
+}
+
+AirDrop.prototype._getPreviousIds = function() {
+	var prev_id = JSON.parse(sessionStorage["prev_id"]||"[]");
+	return prev_id;
+}
+
+// el로 id를 찾기
+AirDrop.prototype._getIdByEl = function(el) {
+	var nearByMe = this.nearByMe;
+
+
+	for (var id in nearByMe) {
+		var curUser = nearByMe[id];
+
+		if (curUser.el === el) {
+			return curUser.id;
+		}
+	}
+	return false;
+};
+
+
+AirDrop.prototype._getXMLHttp = function() {
+	var xmlhttp = null;
+
+	if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
+		xmlhttp = new XMLHttpRequest();
+
+	} else {// code for IE6, IE5
+		xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+
+	}
+
+	return xmlhttp;
+};
+
+
+function App() {
+	this.avatarTemplate = null;
+	this.userContainerEl = null;
+	this.neighborContainerEl = null;
+	this.airdrop = null;
+	
+	this.init();
+}
+
+
+App.prototype.init = function() {
+	this.airdrop = new AirDrop({url: 'http://www.heej.net/2014/airdropbox/nearbyuser.php'})
+	this.airdrop.on('adduser', this.addAvatar.bind(this));
+	this.airdrop.on('removeuser', this.removeAvatar.bind(this));
+	
+	this.avatarTemplateMe = _.template(document.getElementById("avatar-template-me").innerHTML);
+	this.avatarTemplateNeighbor = _.template(document.getElementById("avatar-template-neighbor").innerHTML);
+
+	this.userContainerEl = document.querySelector(".user-container");
+	this.neighborContainerEl = document.querySelector(".neighbor-container");
+
+	// 첫 wave를 그리고 
+	this.drawWave();
+	// 화면사이즈가 바뀔 때 마다 다시 wave를 그려주는 이벤트핸들러를 등록한다.
+	window.addEventListener("resize",this.drawWave);
+};
+
+
+// App.prototype.addAvatar = function(containerEl, neighborObj) {
+App.prototype.addAvatar = function(args) {
+	var neighborObj = args[0];
+	var that = this;
+	var template = null;
+	var containerEl = (neighborObj.me)? this.userContainerEl: this.neighborContainerEl;
+	
+	if(containerEl.className ==="user-container") {
+		template = this.avatarTemplateMe(neighborObj);
+
+	} else {
+		template = this.avatarTemplateNeighbor(neighborObj);
+
+	}
+	
+	containerEl.insertAdjacentHTML('afterbegin', template);
+
+	if(containerEl.className ==="neighbor-container") {
+		var $overArea = $("#"+neighborObj.id);
+		var $dropMask = $("#"+neighborObj.id+" > .drop-mask");
+		var overArea = document.getElementById(neighborObj.id);
+		var dropMask = overArea.querySelector(".drop-mask");
+		overArea.addEventListener('dragover', function(e) {
+	        e.stopPropagation();
+	        e.preventDefault();		
+			$overArea.addClass('dragover');
+			$dropMask.show();
+		}, false);
+		dropMask.addEventListener('dragleave', function(e) {
+		    e.stopPropagation();
+			e.preventDefault();
+			$overArea.removeClass('dragover');		
+			$dropMask.hide();
+		}, false);
+		dropMask.addEventListener('drop', function(e) {
+		    e.stopPropagation();
+			e.preventDefault();
+			$overArea.removeClass('dragover');		
+			$dropMask.hide();
+				
+			// 파일 전송 시작 처리를 하는 부분	
+			// that.prepareFiletransfer(that.myId, neighborObj.id);
+			// debugger;
+			// file이 동시에 여러개 포함될 경우 처리할 필요 있음.
+
+			var targetEl = e.target.parentNode;
+			var file = e.dataTransfer.files[0];
+
+			// targetEl로 file을 전송
+			this.airdrop.send(targetEl, file);
+
+		}.bind(this), false);
+	}
+	neighborObj.el = document.getElementById(neighborObj.id); 
+	neighborObj.setDefaultSpring();
+	neighborObj.spring.setEndValue(2);
+};
+
+App.prototype.removeAvatar = function(args) {
+	var neighborObj = args[0];
+	neighborObj.el.parentNode.removeChild(neighborObj.el);
+	// // 모델에서 삭제
+	// debugger;
+	// for(var i in this.nearbyusers) {
+	// 	if(this.nearbyusers[i] === neighborObj) {
+	// 		this.nearbyusers.splice(i, 1);
+	// 	}
+	// }
 };
 
 App.prototype.drawWave = function() {
@@ -429,138 +816,10 @@ App.prototype.drawWave = function() {
 	svgContainer.innerHTML = wavePartialHTML;
 };
 
-App.prototype.start = function() {
-	// 첫 wave를 그리고 
-	this.drawWave();
-	// 화면사이즈가 바뀔 때 마다 다시 wave를 그려주는 이벤트핸들러를 등록한다.
-	window.addEventListener("resize",this.drawWave);
-		
-	// 나의 위도와 경도를 확보한다.
-	this.getLocation(); // 여기에 정보요청 -> 모델 업뎃 -> UI싱크(상대유저목록) 과정을 1초당 한번씩 수행하도록 하는 콜백을 달았다.
-
-	// 나의 아바타를 등장시킨다.
-	this.addAvatar(this.userContainerEl, this.me);	
-};
-
-App.prototype.prepareFiletransfer = function(senderId, receiverId) {
-	var senderName = Neighbor.prototype.getUserName(senderId);
-	var receiverName = Neighbor.prototype.getUserName(receiverId);
-	alert(senderName+"가 "+receiverName+"에게 파일을 던졌습니다!");
-};
-
-App.prototype.addAvatar = function(containerEl, neighborObj) {
-	var that = this;
-	var template = null;
-	
-	if(containerEl.className ==="user-container") {
-		template = this.avatarTemplateMe(neighborObj);
-	} else {
-		template = this.avatarTemplateNeighbor(neighborObj);		
-	}
-	
-	containerEl.insertAdjacentHTML('afterbegin', template);
-
-	if(containerEl.className ==="neighbor-container") {
-		var $overArea = $("#"+neighborObj.id);
-		var $dropMask = $("#"+neighborObj.id+" > .drop-mask");
-		var overArea = document.getElementById(neighborObj.id);
-		var dropMask = overArea.querySelector(".drop-mask");
-		overArea.addEventListener('dragover', function(e) {
-	        e.stopPropagation();
-	        e.preventDefault();		
-			$overArea.addClass('dragover');
-			$dropMask.show();
-		}, false);
-		dropMask.addEventListener('dragleave', function(e) {
-		    e.stopPropagation();
-			e.preventDefault();
-			$overArea.removeClass('dragover');		
-			$dropMask.hide();
-		}, false);
-		dropMask.addEventListener('drop', function(e) {
-		    e.stopPropagation();
-			e.preventDefault();
-			$overArea.removeClass('dragover');		
-			$dropMask.hide();
-				
-			// 파일 전송 시작 처리를 하는 부분	
-			that.prepareFiletransfer(that.myId, neighborObj.id);
-		}, false);
-	}
-	neighborObj.el = document.getElementById(neighborObj.id); 
-	neighborObj.setDefaultSpring();
-	neighborObj.spring.setEndValue(2);
-};
-
-App.prototype.removeAvatar = function(neighborObj) {
-	neighborObj.el.parentNode.removeChild(neighborObj.el);
-	// 모델에서 삭제
-	for(var i in this.nearbyusers) {
-		if(this.nearbyusers[i] === neighborObj) {
-			this.nearbyusers.splice(i, 1);
-		}
-	}
-};
-
-App.prototype.getLocation = function() {
-	if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-        (function(position){
-			this.geolocation.latitude = position.coords.latitude;
-			this.geolocation.longitude = position.coords.longitude;	     
-
-			// 정보요청 -> 모델 업뎃 -> UI싱크(상대유저목록) 과정을 1초당 한번씩 수행하도록 한다.
-			setTimeout((function() {
-				var handler = this.neighborRequestHandler.bind(this);
-				setInterval(this.sendRequest.bind(this,handler),1000);	
-			}).bind(this), 1500);
-        }).bind(this));
-    } else {
-        // Geolocation 이 지원되지 않는 경우에 서비스 이용 불가 메시지를 남기고 서버로 요청 못 보내게 만들기 
-        alert("Geolocation is not supported by this browser.");
-    }
-};
-
-// 연결서버에 요청을 보낸다.
-App.prototype.sendRequest = function(handler){
-	// 유저의 정보를 담아 요청 보내기
-	var that = this;
-	var xmlhttp;
-	if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
-		xmlhttp=new XMLHttpRequest();
-	}
-	else{// code for IE6, IE5
-		xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-	}
-	xmlhttp.open("POST",this.url,true);
-	xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-	xmlhttp.send("cmd=getNeighbors&id="+this.myId+"&longitude="+this.geolocation.longitude+"&latitude="+this.geolocation.latitude);	
-	xmlhttp.onreadystatechange = function(){
-		if (xmlhttp.readyState==4 && xmlhttp.status==200 && xmlhttp.responseText.length>0){
-			var neighbors = JSON.parse(xmlhttp.responseText);
-			// 왜인지 몰라도 핸들러없이 콜백이 설정될 때가 있으므로 있을때만 요청결과 처리하도록 한다.
-			if( handler )
-				handler(neighbors,that.synchronizeUI.bind(that));
-		}
-	};	
-};
 
 // 현재는 내 아이디가 자동생성이지만 
 // 인자로 내 아이디를 넘기면서 APP을 생성해야 한다.
 var app = new App();
 
-// 창이 닫힐때 내 아이디를 서버에서 지워달라는 요청을 보냄 
-window.onbeforeunload = function () {
-	var xmlhttp;
-	if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
-		xmlhttp=new XMLHttpRequest();
-	}
-	else{// code for IE6, IE5
-		xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-	}
-	xmlhttp.open("POST",app.url,true);
-	xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-	xmlhttp.send("cmd=deleteMe&id="+this.myId);	
-};
 
 </script>
