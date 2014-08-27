@@ -1,12 +1,6 @@
 <meta charset="utf-8"/>
 <link href='http://fonts.googleapis.com/css?family=Lato:100,400,100italic' rel='stylesheet' type='text/css'>
 <title>소통없는 전송</title>
-<!--
-No Flow Control
-계속 for문 돌리면서 보낼테니 알아서 받으세요 
-하고 만들었었는데, 너무 수신측의 이벤트큐 폭발이 심해서
-전송 간격을 설정 할 수 있게 만듬.
--->
 <style>
 * {
 	font-family: 'Lato', sans-serif;
@@ -119,8 +113,8 @@ h2 {
 </div>
 <script src="./lib/peer.js"></script>
 <script>
-var CHUNK_SIZE = 80000;
-var SEND_CHUNK_GAP = 30;
+var CHUNK_SIZE = 131250; // MAGIC_NUMBER
+var CHUNK_PACKAGE_SIZE = 1;
 
 function Connection() {
 	this.blobMap = [];
@@ -132,13 +126,20 @@ function Connection() {
 	this.transferEnd;
 	this.duration;
 	
+	this.currentChunkIndex = 0;
+	this.reader = new FileReader();
+	
 	this.sliceBlobWorker = new Worker('sliceBlob.js');
+	this.sliceBlobWorker.postMessage({
+		'cmd': 'initChunkSize', 
+		'chunkSize': CHUNK_SIZE
+	});	
 	// 블록 슬라이스가 끝나면 호출되는 콜백 
 	this.sliceBlobWorker.onmessage = function(e) {
 	    switch (e.data.status) {
 			case 'log':
-			console.log(e.data.message);  	
-			break;
+				console.log(e.data.message);  	
+				break;
 			case 'progress':
 			console.log("Blob Slice - 하는중"); 
 			var progress = (e.data.current / e.data.total)*100;
@@ -151,7 +152,6 @@ function Connection() {
 	    }    	
 	}.bind(this);
 
-	
 	this.peer = new Peer({key: '4uur7cd24jzwipb9'});
 	this.initPeerEventHandler();
 }
@@ -183,13 +183,13 @@ Connection.prototype.initConnectionHandler = function() {
 		});
 	}.bind(this));		
 	this.connection.on('data', function(data){
-		if(data.index) { // 파일의 데이터를 받은거임 
+		if(data.hasOwnProperty('index')) { // 파일의 데이터를 받은거임 
 			this.receivedBlobMap[data.index] = data.arrayBuffer;
 			// 프로그레스 바를 업데이트 
 			var progress = (this.receivedBlobMap.length / this.receivedFileInfo.totalChunk)*100;
 			document.getElementById("receive-chunk-progress-bar").setAttribute("style", "width:"+progress+"%");	
 
-			if(data.index === "0") {
+			if(data.index == 0) {
 				this.transferStart = Date.now();
 			}
 			// 다 받았는지 확인.
@@ -201,6 +201,22 @@ Connection.prototype.initConnectionHandler = function() {
 					"blobMap": this.receivedBlobMap
 				});					
 			}
+			// 다 안받았으면 다음꺼 보내달라고 송신자에게 응답을 보낸다.
+			else {
+				if(this.connection && this.connection.open===true) {
+					this.connection.send({
+						"receivedChunkIndex": data.index
+					});
+				}
+			}
+		}
+		else if(data.hasOwnProperty('receivedChunkIndex')){ // 수신자 에게서 다음 거 보내달라는 요첨을 받은거임 
+			// 쳥크인덱스 1증가시키고  
+			// 해당 쳥크를 보낸다.
+			this.currentChunkIndex += CHUNK_PACKAGE_SIZE;
+			this.message({
+				"cmd": "sendChunk"
+			});			
 		}
 		else { // 파일의 메타정보를 받은거임 
 			this.message({
@@ -228,39 +244,36 @@ Connection.prototype.sendFileInfo = function(meta){
 };
 
 Connection.prototype.sendFileData = function(){
-	for(var i in this.blobMap) {
-		var reader = new FileReader();
-		reader.onload = (function(arrayBufferIndex, event) {
-			console.log("파일데이터 보내기 : "+arrayBufferIndex);
-		    var arrayBuffer = event.target.result; // data는 ArrayBuffer 이다
-			// ArrayBuffer 를 통째로 파일데이터 chunk 전송에 사용한다.
-			this.sendChunk(arrayBuffer,arrayBufferIndex);
+	// 현재 커서가 가리키는 쳥크를 보낸다.
+	this.reader.onload = (function(arrayBufferIndex, event) {
+		console.log("파일데이터 보내기 : "+arrayBufferIndex);
+	    var arrayBuffer = event.target.result; // data는 ArrayBuffer 이다
+		// ArrayBuffer 를 통째로 파일데이터 chunk 전송에 사용한다.
+		this.sendChunk(arrayBuffer,arrayBufferIndex);
 
-			if(arrayBufferIndex + 1 === this.blobMap.length) {
-				this.message({
-					"status": "finished"
-				});				
-			}
-		}).bind(this,i);
-		
-		var chunkBlob = this.blobMap[i];
-		reader.readAsArrayBuffer(chunkBlob);
-	}
+		if(arrayBufferIndex + 1 === this.blobMap.length) {
+			this.message({
+				"status": "finished"
+			});				
+		}
+	}).bind(this,this.currentChunkIndex);
+	
+	var chunkBlob = this.blobMap[this.currentChunkIndex];
+	this.reader.readAsArrayBuffer(chunkBlob);
+
 };
 
 Connection.prototype.sendChunk = function(arrayBuffer,index){
 	if(this.connection && this.connection.open===true) {
-		setTimeout(function(){
-			this.connection.send({
-				"arrayBuffer": arrayBuffer,
-				"index": index
-			});
-			this.message({
-				"status": "progress",
-				"current": index,
-				"total": this.blobMap.length
-			});		
-		}.bind(this), SEND_CHUNK_GAP*index);
+		this.connection.send({
+			"arrayBuffer": arrayBuffer,
+			"index": index
+		});
+		this.message({
+			"status": "progress",
+			"current": index+1,
+			"total": this.blobMap.length
+		});
 	}
 };
 
@@ -315,8 +328,7 @@ Connection.prototype.message = function(param) {
 			var objectURL = URL.createObjectURL(blob);
 			this.download(objectURL, this.receivedFileInfo.name);
 			
-			// 걸린 시간과 속도 화면에 표시 
-			//debugger;
+			// 걸린 시간과 속도 화면에 표시
 			var duration = (this.transferEnd - this.transferStart)/1000;
 			var sizeExpression = this._getSizeExpression(this.receivedFileInfo.size);
 			var speed = parseInt((parseFloat(sizeExpression)/ duration)*10)/10;
@@ -438,8 +450,6 @@ fileControl.addEventListener("change", function(event){
 		'totalChunk': file.totalChunk
 	});
 }.bind(this));
-
-
 
 // 전송 버튼을 누르면 메시지를 전달함
 document.getElementById("send").addEventListener("click", function(){

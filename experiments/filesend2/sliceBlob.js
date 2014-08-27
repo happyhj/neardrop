@@ -1,4 +1,4 @@
-var CHUNK_SIZE = 80000;
+var CHUNK_SIZE;
 
 var blobMap = [];
 var motherBlob
@@ -6,6 +6,9 @@ var motherBlob
 
 self.onmessage = function(e) {
     switch (e.data.cmd) {
+      case 'initChunkSize':
+      	self.CHUNK_SIZE = e.data.chunkSize;
+        break;
       case 'sliceBlob':
       	motherBlob = e.data.blob;
       	totalChunk = e.data.totalChunk;
