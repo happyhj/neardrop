@@ -5,8 +5,7 @@ Project_AirDropBox
 
 파일전송 데모
 
-- 사용방법: 두개의 브라우저창에 사이트를띄운 후 상단에 나의 peerID가 보이면 아래 칸에 열결대상의 peerID를 입력 후 파일을 선택하고
-- slicing process가 종료된 후에 send버튼을 누르면 파일전송이 시작된다.
+- 사용방법: 두개의 브라우저창에 사이트를띄운 후 상단에 나의 peerID가 보이면 아래 칸에 열결대상의 peerID를 입력 후 파일을 선택하고 slicing process가 종료된 후에 send버튼을 누르면 파일전송이 시작된다.
 
 Experiment 1. 흐름제어 없이 파일전송 DEMO
 
