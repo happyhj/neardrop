@@ -29,6 +29,7 @@ Experiment 3. FileSystem API 파일수신 DEMO
 http://labs.heej.net/peerfile2/
 
 - Blob slicing 선처리 과정 생략
+- FileSaver, FileSender 모듈 작성
 - 수신측에서 FileSystem API를 사용하여 내용 저장. 
 - 대용량 단일 파일 전송을 위한 기반을 다진 셈.
 - 700MB 파일 전송 성공.
