@@ -23,3 +23,14 @@ http://labs.heej.net/peerfile1/
 - 400MB 파일 전송 성공. 그 이상은 전송시 수신측 크래쉬 
 - 3.7MB/s 의 속도까지 도달 
 - 아직 실 사용에는 미흡한 속도
+
+Experiment 3. FileSystem API 파일수신 DEMO
+
+http://labs.heej.net/peerfile2/
+
+- Blob slicing 선처리 과정 생략
+- 수신측에서 FileSystem API를 사용하여 내용 저장. 
+- 대용량 단일 파일 전송을 위한 기반을 다진 셈.
+- 700MB 파일 전송 성공.
+- 크래쉬의 원인인 메모리누수현상을 확인, ArrayBuffer외 의 객체를 사용한 데이터 전달 방식을 고려해야할 것으로 보임
+- 4.2MB/s 의 속도까지 도달 
