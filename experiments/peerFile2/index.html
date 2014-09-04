@@ -122,6 +122,9 @@ function Connection() {
 	this.fileSaver = new FileSaver();
 	this.fileSender = new FileSender();
 	
+	this.indexedChunkUtil = new IndexedChunkUtil();
+	
+	
 	this.peer = new Peer({
 		key: '4uur7cd24jzwipb9'
 		,debug: true	
@@ -145,43 +148,41 @@ Connection.prototype.initPeerEventHandler = function() {
 }
 
 Connection.prototype._handleMessage = function(message) {
-	var kind = message.kind; // chunk, meta, request
-	switch (kind) {
-		case "meta":
-			console.log("[Connection : _handleMessage] incoming message META");
-			var fileInfo = message.fileInfo;
-			this.initSaver({
-				name: fileInfo.name,
-				size: fileInfo.size,
-				type: fileInfo.type,
-				lastModifiedDate: fileInfo.lastModifiedDate,
-				chunkUnitSize: message.chunkUnitSize
-			});
-			break;
-		case "chunk":
-			/*
-			// 저장과정을 생략하면 누수에 변화가 생길까? 실험 
-			this.connection.send({
-				"kind": "request"
-				, "index": this.fileSaver.getNextChunkIndexNeeded() // 필요한 쳥크 인덱스를 알려주는 메소드를 이용하면 될듯 
-			});
-			*/
-				
-			this.fileSaver.saveChunk(message.chunk);
-			var index = message.chunk.index;
-			// 수신 시작 시각 저장 			
-			if(index == 0) {
-				this.transferStart = Date.now();
-			}
+	if( message.byteLength !== undefined ) { // ArrayBuffer 가 도착한 것
+		var chunkIndex = this.indexedChunkUtil.extractChunkIndex(message);
+		var chunkData = this.indexedChunkUtil.extractPayloadBuffer(message);
 					
+		this.fileSaver.saveChunk(chunkData, chunkIndex);
+		var index = chunkIndex;
+		// 수신 시작 시각 저장 			
+		if(index == 0) {
+			this.transferStart = Date.now();
+		}
+						
+	}
+	else { // JSON이 도착한 것 
+		var kind = message.kind; // chunk, meta, request
+		switch (kind) {
+			case "meta":
+				console.log("[Connection : _handleMessage] incoming message META");
+				var fileInfo = message.fileInfo;
+				this.initSaver({
+					name: fileInfo.name,
+					size: fileInfo.size,
+					type: fileInfo.type,
+					lastModifiedDate: fileInfo.lastModifiedDate,
+					chunkUnitSize: message.chunkUnitSize
+				});
+				break;
+			case "request":
+				var index = message.index;
+				this.sendChunk(index);
 			break;
-		case "request":
-			var index = message.index;
-			this.sendChunk(index);
-		break;
-		default:
-			break;
-	};
+			default:
+				break;
+		};
+	}
+
 };
 
 Connection.prototype.initConnectionHandler = function() {
@@ -343,12 +344,11 @@ Connection.prototype.initSender = function(initParam) {
 };
 
 Connection.prototype.sendChunk = function(chunkIndex) {
-	this.fileSender.getChunk(chunkIndex, function(chunk){
+	this.fileSender.getChunk(chunkIndex, function(dataBuffer){
 		if(this.connection && this.connection.open===true) {
-			this.connection.send({
-				  "kind": "chunk"
-				, "chunk": chunk
-			});
+//			debugger;
+			var indexedChunkBuffer = this.indexedChunkUtil.insertIndexBuffer(dataBuffer, chunkIndex);
+			this.connection.send(indexedChunkBuffer);
 		}				
 	}.bind(this));	
 };

@@ -188,15 +188,15 @@
 		}
 		this.receivedChunkCount = 0;
 	};
-	
-	FileSaver.prototype.saveChunk = function(data) {
+
+	FileSaver.prototype.saveChunk = function(chunkData, chunkIndex) {
 		// 해당 데이타가 쓰여져야할 곳으로 커서를 이동시킨다.
 		
-		this._fileWriter.seek(data.index * this.meta.chunkUnitSize); // Start write position at EOF.
-		var blob = new Blob([data.arrayBuffer]);
-		this.chunkMap[""+data.index] = true;
+		this._fileWriter.seek(chunkIndex * this.meta.chunkUnitSize); // Start write position at EOF.
+		var blob = new Blob([chunkData]);
+		this.chunkMap[""+chunkIndex] = true;
 
-		this._fileWriter.write(1);
+		this._fileWriter.write(blob);
 		
 		// 여기서 강제 GC blob을 수행시켜야함
 		// AB만? blob만? 둘다?

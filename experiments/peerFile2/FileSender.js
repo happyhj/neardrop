@@ -87,17 +87,8 @@
 		// 	      이점을 고려하여 로직을 개선해야함 
 		this._fileReader.onload = function(chunkIndex, callback, event){
 	    	var arrayBuffer = event.target.result;
-			console.log({
-				"arrayBuffer": arrayBuffer,
-				"index": chunkIndex
-			});
-			console.log(callback);
-
-			// arrayBuffer 와 index로 이루어진 chunk 객체(아직 생성자 같은건 없음) 를 담아서 콜백 호출 
-			callback({
-				"arrayBuffer": arrayBuffer,
-				"index": chunkIndex
-			});
+			// arrayBuffer 만을 담아서 콜백 호출 
+			callback(arrayBuffer);
 		}.bind(this, chunkIndex, callback);
 		this._fileReader.readAsArrayBuffer(blobSlice);
 	};

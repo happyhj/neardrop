@@ -2,11 +2,8 @@
 	'use strict';
 	var document = window.document;
 	var console = window.console;
-	var IndexedChunkUtil = window.IndexedChunkUtil || {};
-	var requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
 
-
-	function IndexedChunkUtil {
+	function IndexedChunkUtil() {
 		
 	}
 	
@@ -14,7 +11,7 @@
 		var indexBuffer = new ArrayBuffer(4);
 		var indexBufferDataView = new DataView(indexBuffer);
 		indexBufferDataView.setUint32(0,chunkIndex);	
-		return appendBuffer(indexBuffer,dataBuffer);
+		return this._appendBuffer(indexBuffer,dataBuffer);
 	};
 	
 	IndexedChunkUtil.prototype.extractChunkIndex = function(buffer) {
@@ -31,15 +28,13 @@
 	  tmp.set( new Uint8Array( buffer2 ), buffer1.byteLength );
 	  return tmp.buffer;
 	}
-
-	var instance = new IndexedChunkUtil();
 	
 	// 글로벌 객체에 모듈을 프로퍼티로 등록한다.
 	if (typeof module !== 'undefined' && module.exports) {
-		module.exports = instance;
+		module.exports = IndexedChunkUtil;
 		// browser export
 	} else {
-		window.IndexedChunkUtil = instance;
+		window.IndexedChunkUtil = IndexedChunkUtil;
 	}    	
 
 }(this));
