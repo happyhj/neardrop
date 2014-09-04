@@ -154,7 +154,6 @@
 						this._fileEntry.createWriter(function(fileWriter) {
 							this._fileWriter = fileWriter;
 //							debugger;
-
 							this._fileWriter.onwriteend = function() {
 								//this._fileWriter.onwriteend = undefined;													
 								this.receivedChunkCount++;
@@ -192,16 +191,17 @@
 	
 	FileSaver.prototype.saveChunk = function(data) {
 		// 해당 데이타가 쓰여져야할 곳으로 커서를 이동시킨다.
+		
 		this._fileWriter.seek(data.index * this.meta.chunkUnitSize); // Start write position at EOF.
 		var blob = new Blob([data.arrayBuffer]);
 		this.chunkMap[""+data.index] = true;
 
-		this._fileWriter.write(blob);
+		this._fileWriter.write(1);
 		
 		// 여기서 강제 GC blob을 수행시켜야함
 		// AB만? blob만? 둘다?
-		this._eraseBuffer(data.arrayBuffer);
-		this._eraseBuffer(blob);
+		//this._eraseBuffer(data.arrayBuffer);
+		//this._eraseBuffer(blob);
 
 	};
 	
@@ -216,12 +216,17 @@
 			console.log("File NOT Completed. You cannot download it yet.");		
 		}
 	};
-	
+
+	FileSaver.prototype._simulatedClick = function(ele) {
+		var evt = document.createEvent("MouseEvent");
+		evt.initMouseEvent("click", true, true, null,0, 0, 0, 80, 20, false, false, false, false, 0, null);
+		ele.dispatchEvent(evt);
+	};
+		
 	// 웹 워커를 이용해서 강제로 GC를 수행하는 메소드
 	FileSaver.prototype._garbageCollector = (function(){
 		var ef = URL.createObjectURL(new Blob([''],{type: 'text/javascript'})),
 				w = new Worker(ef);
-		
 		URL.revokeObjectURL(ef);
 		return w;
 	})();
@@ -229,13 +234,8 @@
 	FileSaver.prototype._eraseBuffer = function(arrayBuffer){
 		this._garbageCollector.postMessage(arrayBuffer,[arrayBuffer]);
 	}	
-
 	
-	FileSaver.prototype._simulatedClick = function(ele) {
-		var evt = document.createEvent("MouseEvent");
-		evt.initMouseEvent("click", true, true, null,0, 0, 0, 80, 20, false, false, false, false, 0, null);
-		ele.dispatchEvent(evt);
-	};
+
 
 	FileSaver = FileSaver;
 	/*  public은 

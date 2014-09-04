@@ -102,12 +102,13 @@ h2 {
 <input id="file" type="file"/>
 <button id="send">Send</button>
 </div>
+<script src="./IndexedChunkUtil.js"></script>
 <script src="./FileSender.js"></script>
 <script src="./FileSaver.js"></script>
 <script src="./lib/peer.js"></script>
 <script>
 
-var CHUNK_SIZE = 130000; // MAGIC_NUMBER : 130000
+var CHUNK_SIZE = 160000; // MAGIC_NUMBER : 160000
 var CHUNK_PACKAGE_SIZE = 1;
 
 function Connection() {
@@ -121,7 +122,10 @@ function Connection() {
 	this.fileSaver = new FileSaver();
 	this.fileSender = new FileSender();
 	
-	this.peer = new Peer({key: '4uur7cd24jzwipb9'});
+	this.peer = new Peer({
+		key: '4uur7cd24jzwipb9'
+		,debug: true	
+	});
 	this.initPeerEventHandler();
 }
 
@@ -155,12 +159,21 @@ Connection.prototype._handleMessage = function(message) {
 			});
 			break;
 		case "chunk":
+			/*
+			// 저장과정을 생략하면 누수에 변화가 생길까? 실험 
+			this.connection.send({
+				"kind": "request"
+				, "index": this.fileSaver.getNextChunkIndexNeeded() // 필요한 쳥크 인덱스를 알려주는 메소드를 이용하면 될듯 
+			});
+			*/
+				
 			this.fileSaver.saveChunk(message.chunk);
 			var index = message.chunk.index;
 			// 수신 시작 시각 저장 			
 			if(index == 0) {
 				this.transferStart = Date.now();
-			}		
+			}
+					
 			break;
 		case "request":
 			var index = message.index;
