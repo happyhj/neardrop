@@ -102,14 +102,13 @@ h2 {
 <input id="file" type="file"/>
 <button id="send">Send</button>
 </div>
-<script src="./IndexedChunkUtil.js"></script>
 <script src="./FileSender.js"></script>
 <script src="./FileSaver.js"></script>
 <script src="./lib/peer.js"></script>
 <script>
 
-var CHUNK_SIZE = 160000; // MAGIC_NUMBER : 160000
-var CHUNK_PACKAGE_SIZE = 1;
+var CHUNK_SIZE = 16000; // 16000 byte per binary chunk
+var BLOCK_SIZE = 64; // 10 binary chunks per one block
 
 function Connection() {
 	this.connection;
@@ -119,16 +118,15 @@ function Connection() {
 	this.transferEnd;
 	this.duration;
 	
+	
 	this.fileSaver = new FileSaver();
 	this.fileSender = new FileSender();
-	
-	this.indexedChunkUtil = new IndexedChunkUtil();
-	
-	
+		
 	this.peer = new Peer({
 		key: '4uur7cd24jzwipb9'
-		,debug: true	
+		, debug: true	
 	});
+	
 	this.initPeerEventHandler();
 }
 
@@ -149,41 +147,50 @@ Connection.prototype.initPeerEventHandler = function() {
 
 Connection.prototype._handleMessage = function(message) {
 	if( message.byteLength !== undefined ) { // ArrayBuffer 가 도착한 것
-		var chunkIndex = this.indexedChunkUtil.extractChunkIndex(message);
-		var chunkData = this.indexedChunkUtil.extractPayloadBuffer(message);
-					
-		this.fileSaver.saveChunk(chunkData, chunkIndex);
-		var index = chunkIndex;
-		// 수신 시작 시각 저장 			
-		if(index == 0) {
-			this.transferStart = Date.now();
-		}
-						
+		console.log("Received ByteLength : "+message.byteLength);	
+		this.fileSaver.saveChunk(message);
 	}
 	else { // JSON이 도착한 것 
 		var kind = message.kind; // chunk, meta, request
 		switch (kind) {
-			case "meta":
-				console.log("[Connection : _handleMessage] incoming message META");
+			case "fileInfo": // 송신자가 보낸 파일 정보가 도착했다. 이를 가지고 file saver 를 초기화한다.
+				console.log("[Connection : _handleMessage] incoming message file info");
 				var fileInfo = message.fileInfo;
 				this.initSaver({
-					name: fileInfo.name,
-					size: fileInfo.size,
-					type: fileInfo.type,
-					lastModifiedDate: fileInfo.lastModifiedDate,
-					chunkUnitSize: message.chunkUnitSize
+					"file": fileInfo,
+					"chunkSize": CHUNK_SIZE,
+					"blockSize": BLOCK_SIZE
 				});
 				break;
-			case "request":
-				var index = message.index;
-				this.sendChunk(index);
+			case "requestBlock":  // 수신자가 보낸 요청 블록 정보가 도착했다. 이를 통해 현재 블록전송 콘텍스트를 초기화 한다.
+				console.log("[Connection : _handleMessage] incoming message requestBlock");
+				console.log("blockIndex : " + message.blockIndex);
+
+				var blockIndex = message.blockIndex;
+				this.fileSender.initBlockContext(blockIndex);				
+			break;
+			case "requestChunk": // 수신자가 다 받았음을 알리면 다음 쳥크를 보낸다.
+				console.log("[Connection : _handleMessage] incoming message requestChunk");
+				this.sendDataChunk();
 			break;
 			default:
 				break;
 		};
 	}
-
 };
+
+Connection.prototype.sendDataChunk = function() {
+	var getNextChunkHandler = function(chunk){
+		console.log(chunk);
+		if(chunk) {
+			if(this.connection && this.connection.open===true) {
+				this.connection.send(chunk);
+			}
+		}
+	}.bind(this);
+
+	this.fileSender.getNextChunk(getNextChunkHandler);
+}
 
 Connection.prototype.initConnectionHandler = function() {
 	this.connection.on('open', function(){
@@ -198,7 +205,6 @@ Connection.prototype.initConnectionHandler = function() {
 		});
 	}.bind(this));		
 	this.connection.on('data', function(message){
-		//console.log(message);
 		this._handleMessage(message);
 	}.bind(this));
 };
@@ -254,7 +260,7 @@ Connection.prototype.message = function(param) {
 				
 			// 걸린 시간과 속도 화면에 표시
 			var duration = (this.transferEnd - this.transferStart)/1000;
-			var sizeExpression = this._getSizeExpression(this.fileSaver.meta.size);
+			var sizeExpression = this._getSizeExpression(this.fileSaver.fileInfo.size);
 			var speed = parseInt((parseFloat(sizeExpression)/ duration)*10)/10;
 			var unit = sizeExpression.replace(/[^a-zA-Z]/g,'');
 			document.querySelector(".speedInfo").innerHTML = "총 "+duration+"초 걸렸고 속도는 "+ speed+unit+"/s";
@@ -284,73 +290,71 @@ Connection.prototype.message = function(param) {
 Connection.prototype.initSaver = function(initParam) {	
 	var initializeCallback = function(){	
 		// 파일정보 수신 시 : UI 업데이트한다
-		this.showFileInfo(this.fileSaver.meta);					
+		this.showFileInfo(this.fileSaver.fileInfo);					
 	}.bind(this);
 	
 	this.fileSaver.on("initialized", initializeCallback);		
 
 	// 세이브 완료 시 : 다음 쳥크 요청하거나 수신 완료여부 체크 후
-	var chunkSavedCallback = function(){
+	var blockSavedCallback = function(){
 		// 다 받았는지 확인.
-		if(this.fileSaver.receivedChunkCount == this.fileSaver.meta.totalChunk) {
+		if(this.fileSaver.blockTranferContext.receivedBlockCount == this.fileSaver.blockTranferContext.totalBlockCount) {
 			this.transferEnd = Date.now();
-			//console.log("쳥크 다바다따!!: "+this.transferEnd);
+			console.log("쳥크 다바다따!!: "+this.transferEnd);
 			this.message({
 				"status": "receiveFinished",
 			});					
 		}
-		// 다 안받았으면 다음꺼 보내달라고 송신자에게 응답을 보낸다.
+		// 다 안받았으면 다음 블록을 보내달라고 송신자에게 응답을 보낸다.
 		else {
-			if(this.connection && this.connection.open===true) {
-				this.connection.send({
-					  "kind": "request"
-					, "index": this.fileSaver.getNextChunkIndexNeeded() // 필요한 쳥크 인덱스를 알려주는 메소드를 이용하면 될듯 
-				});
-			}
+			this.requestBlockTransfer();
 		} 
 		// UI 업데이트한다 프로그레스 바를 업데이트 
-		var progress = (this.fileSaver.receivedChunkCount / this.fileSaver.meta.totalChunk)*100;
+		var progress = (this.fileSaver.blockTranferContext.receivedBlockCount / this.fileSaver.blockTranferContext.totalBlockCount)*100;
 		document.getElementById("receive-chunk-progress-bar").setAttribute("style", "width:"+progress+"%");
-		
 	}.bind(this);
 				
-	this.fileSaver.on("chunkSaved", chunkSavedCallback);	
+	this.fileSaver.on("blockSaved", blockSavedCallback);	
+	
+	var chunkStoredCallback = function(){
+		this.connection.send({
+			  "kind": "requestChunk"
+		});		
+	}.bind(this);
+	
+	this.fileSaver.on("chunkStored", chunkStoredCallback);		
+
 	this.fileSaver.init({
-		name: initParam.name,
-		size: initParam.size,
-		type: initParam.type,
-		lastModifiedDate: initParam.lastModifiedDate,
-		chunkUnitSize: initParam.chunkUnitSize
+		file: initParam.file,
+		chunkSize: initParam.chunkSize,
+		blockSize: initParam.blockSize
 	});	
 };
 	
 Connection.prototype.initSender = function(initParam) {	
+
+	var blockContextInitializedCallback = function(e) {
+		this.sendDataChunk();
+	}.bind(this);
+	this.fileSender.on("blockContextInitialized", blockContextInitializedCallback);	
+				
 	this.fileSender.on("initialized", function() {
 		if(this.connection && this.connection.open===true) {
 			console.log("메타 정보 보내기");
 			this.connection.send({
-				  "kind": "meta"
+				  "kind": "fileInfo"
 				, "fileInfo": {
 					"lastModifiedDate": initParam.file.lastModifiedDate,
 					"name": initParam.file.name,
 					"size": initParam.file.size,
 					"type": initParam.file.type	
 				}
-				, "chunkUnitSize": initParam.chunkUnitSize
+				, "chunkSize": initParam.chunkSize
+				, "blockSize": initParam.blockSize
 			});
 		}		
 	}.bind(this));
 	this.fileSender.init(initParam);
-};
-
-Connection.prototype.sendChunk = function(chunkIndex) {
-	this.fileSender.getChunk(chunkIndex, function(dataBuffer){
-		if(this.connection && this.connection.open===true) {
-//			debugger;
-			var indexedChunkBuffer = this.indexedChunkUtil.insertIndexBuffer(dataBuffer, chunkIndex);
-			this.connection.send(indexedChunkBuffer);
-		}				
-	}.bind(this));	
 };
 
 Connection.prototype.makeConnection = function(peerId) {
@@ -361,7 +365,15 @@ Connection.prototype.makeConnection = function(peerId) {
 	});
 };
 
-
+Connection.prototype.requestBlockTransfer = function() {
+	if(this.connection && this.connection.open===true) {	
+		this.fileSaver.blockTranferContext.blockIndex = this.fileSaver.getNextBlockIndexNeeded();
+		this.connection.send({
+			  "kind": "requestBlock",
+			  "blockIndex": this.fileSaver.blockTranferContext.blockIndex
+		});
+	}
+};
 	
 var APP = new Connection();
 
@@ -390,18 +402,19 @@ fileControl.addEventListener("change", function(event){
 	var file = event.target.files[0];
 	APP.initSender({
 		"file": file,
-		"chunkUnitSize": CHUNK_SIZE
+		"chunkSize": CHUNK_SIZE,
+		"blockSize": BLOCK_SIZE
 	});
 	// fileSender 초기과 콜백으로 UI 업뎃을 수행한다.
-	APP.showFileInfo(APP.fileSender.meta);
+	APP.showFileInfo(APP.fileSender.fileInfo);
 
 }.bind(this));
 
-// 전송 버튼을 누르면 메시지를 전달함
+// 전송 버튼을 누르면 메시지를 전달한당
 document.getElementById("send").addEventListener("click", function(){
-	// 첫번째 쳥크를 보낸다.
 	console.log("첫번째 쳥크를 구해온다");
-	APP.sendChunk(0);
+	APP.transferStart = Date.now();
+	APP.requestBlockTransfer();
 }.bind(this));
 
 
