@@ -1,6 +1,5 @@
 (function(window) {
 	'use strict';
-	var document = window.document;
 	var console = window.console;
 
 	// EventEmitter
@@ -38,7 +37,8 @@
 				
 		this._eventEmitter = {
 			'initialized': new _EventEmitter(),
-			'blockContextInitialized': new _EventEmitter()
+			'blockContextInitialized': new _EventEmitter(),
+			'blockSent': new _EventEmitter()
 //			, 'chunkSaved': new _EventEmitter()
 //			, 'fileCompleted': new _EventEmitter()	
 		};
@@ -67,12 +67,14 @@
 			type: initParam.file.type,
 			lastModifiedDate: initParam.file.lastModifiedDate,
 		};
-		
+	
 		this.blockTranferContext = {
 			"chunkSize": initParam.chunkSize,
 			"blockSize": initParam.blockSize,
 			"chunkIndexToSend": undefined, // 이번에 보내야할 쳥크 인덱스. 보내자 마자 ++ 한다.
 			"blockIndex": undefined, // 요청이 들어올때 까지는 어떤 블록인지 모르므로..
+			"sentChunkCount": 0,
+			"totalChunkCount": Math.floor(this.fileInfo.size / (initParam.chunkSize)) + 1,
 		};
 		
 		this._fileReader = new FileReader();
@@ -122,7 +124,6 @@
 	// 그냥 한다.  
 	// 비동기 작업이므로 콜백함수로 결과값을 넘긴다.
 	FileSender.prototype.getNextChunk = function(callback) {
-		// 해당 데이타가 쓰여져야할 곳으로 커서를 이동시킨다.
 		var chunkIndex = this.blockTranferContext.chunkIndexToSend,
 		chunkSize = this.blockTranferContext.chunkSize;
 		
@@ -131,6 +132,20 @@
 			return; 
 		}
 		this._increaseChunkIndex();
+		// 평가를 해서 현재 쳥크가 블록의 마지막 쳥크라면 이벤트 발생
+    	var isLastChunkInBlock = ((chunkIndex+1) >= this.blockTranferContext.blockSize)?true:false;
+		if(isLastChunkInBlock) {
+			this._eventEmitter.blockSent.trigger(this.blockTranferContext.blockIndex);
+		} else {
+			var isLastChunkInFile = false; 
+			if(this.blockTranferContext.sentChunkCount === this.blockTranferContext.totalChunkCount-1) {
+				isLastChunkInFile = true;	
+			}
+			if(isLastChunkInFile) {
+				this._eventEmitter.blockSent.trigger(this.blockTranferContext.blockIndex);
+			}			
+		}
+		
 		callback(this.blockArrayBuffers[chunkIndex]);
 	};
 	

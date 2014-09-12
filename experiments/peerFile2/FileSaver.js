@@ -47,11 +47,13 @@
 		this._fileEntry;
 		this._fileWriter;
 		this._eventEmitter = {
+			'instancePrepared': new _EventEmitter(),
 			'initialized': new _EventEmitter(),
 			'blockSaved': new _EventEmitter(),
-			'fileCompleted': new _EventEmitter(),
+//			'fileCompleted': new _EventEmitter(),
 			'chunkStored': new _EventEmitter()
 		};
+		console.log("[FileSaver] cleaning FileSystem");
 		requestFileSystem(window.TEMPORARY ,1, function(fs){
 				// 파일 시스템에 존재하는 파일을 모두 지우기
 				this._fileSystem = fs;
@@ -70,8 +72,10 @@
 							    }, this._errorHandler);
 							}
 						}
-					}, this._errorHandler);
-				}, this._errorHandler);
+						console.log(this);
+						this._eventEmitter.instancePrepared.trigger();
+					}.bind(this), this._errorHandler);
+				}.bind(this), this._errorHandler);
 			}.bind(this)
 			,this._errorHandler
 		);	
@@ -139,11 +143,11 @@
 			type: initParam.file.type,
 			lastModifiedDate: initParam.file.lastModifiedDate,
 		};
-			
 		this.blockTranferContext = {
 			"chunkSize": initParam.chunkSize,
 			"blockSize": initParam.blockSize,
 			"receivedBlockCount": undefined,
+			"receivedChunkCount": undefined,
 			"totalBlockCount": Math.floor(this.fileInfo.size / (initParam.chunkSize * initParam.blockSize)) + 1,
 			"totalChunkCount": Math.floor(this.fileInfo.size / (initParam.chunkSize)) + 1,
 			"blockMap": undefined, // init시 생성
@@ -171,12 +175,7 @@
 								this.blockTranferContext.blockMap[""+this.blockTranferContext.blockIndex] = true;								
 								// 파일 쓰기가 종료되면 chunkSaved 이벤트를 trigger 한다.
 								console.log('Block saved!');		
-								this._eventEmitter.blockSaved.trigger();
-								// 판단해서 파일이 모두 완성되었다고 생각 되면 fileCompleted 이벤트를 trigger 한다.
-								if(this.blockTranferContext.receivedBlockCount === this.blockTranferContext.totalBlockCount) {
-									console.log("File Completed!");
-									this._eventEmitter.fileCompleted.trigger();
-								}
+								this._eventEmitter.blockSaved.trigger(this.blockTranferContext.blockIndex);
 							}.bind(this);								
 							// chunkMap 초기화, receivedChunkCount 초기화;
 							this._initBlockMap();
@@ -200,6 +199,8 @@
 		}
 		this.blockTranferContext.blockMap = blockMap;	
 		this.blockTranferContext.receivedBlockCount = 0;
+		this.blockTranferContext.receivedChunkCount = 0;
+
 	};
 
 	FileSaver.prototype.saveChunk = function(chunk) {
@@ -212,6 +213,7 @@
 		
 		// 데이터를 일단 주머니에 담고 
 		this.chunkBlock.push(chunk);
+		this.blockTranferContext.receivedChunkCount++;
 
 		// 한계치까지 담겼는지 확인 후 	
     	var isLastChunkInBlock = (this.chunkBlock.length >= blockSize)?true:false;
