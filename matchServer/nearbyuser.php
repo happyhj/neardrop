@@ -7,8 +7,8 @@ if (mysqli_connect_errno()) {
   echo "Failed to connect to MySQL: " . mysqli_connect_error();
 }
 
-// 3초가 지난 것들은 삭제 
-mysqli_query($con,"DELETE FROM user WHERE timestamp < DATE_SUB(NOW(), INTERVAL 3 SECOND)");
+// 60초가 지난 것들은 삭제 
+mysqli_query($con,"DELETE FROM user WHERE timestamp < DATE_SUB(NOW(), INTERVAL 60 SECOND)");
 
 $cmd = $_POST['cmd'];
 $id = $_POST['id'];

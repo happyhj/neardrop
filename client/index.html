@@ -78,11 +78,25 @@ h1 {
 	background-size: cover;
 	border-radius: 50px;
 	
-	-webkit-box-shadow: 0px 3px 2px 0px rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.20);
-	-moz-box-shadow:    0px 3px 2px 0px rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.20);
-	box-shadow:         0px 3px 2px 0px rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.20);
+	1-webkit-box-shadow: 0px 3px 2px 0px rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.20);
+	1-moz-box-shadow:    0px 3px 2px 0px rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.20);
+	1box-shadow:         0px 3px 2px 0px rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.20);
 
 }
+
+.progress-container {
+	position: absolute;
+	margin-top: 5px;
+	margin-left: 10px;
+	width: 110px;
+	height: 110px;
+	1background-color: white;
+	background-size: cover;
+	border-radius: 55px;
+	z-index: -100;
+	opacity: .8;
+}
+
 .blind {
 	display: none;
 }
@@ -132,6 +146,8 @@ h1 {
 <div class="avatar" id="<%= id %>">
 <div class="drop-mask"></div>
 <span class="id blind"><%= id %></span>
+<div class="progress-container">
+</div>
 <div class="avatar-pic" style="background-image:url(./user_pic/<%= image %>)">
 </div>
 <h1><%= name %></h1>
@@ -144,7 +160,11 @@ h1 {
 <!-- template 과 contanins 용-->
 <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
 <!-- peer 연결용 -->
-<script type="text/javascript" src="./lib/peer.min.js"></script>
+<script type="text/javascript" src="./lib/peer.js"></script>
+<script src="./script/FileSender.js"></script>
+<script src="./script/FileSaver.js"></script>
+<script src="./script/ConnectionHandler.js"></script>
+<script src="./script/pieLoader.js"></script>
 
 <script>
 
@@ -334,10 +354,21 @@ function AirDrop(args) {
 	this.nearByMe = {};
 
 	// peer 객체
-	this.peer = new Peer({key: 'lwjd5qra8257b9'});
+	this.peer = new Peer({key: '4uur7cd24jzwipb9'
+		, debug: true
+	});
 
+	
+//	this.connectionHandlers = [];
+	this.connectionHandler = new ConnectionHandler({
+		'CHUNK_SIZE': 16000,  // 16000 byte per binary chunk
+		'BLOCK_SIZE': 64, // 10 binary chunks per one block
+		'userPeer':	this.peer
+	});
+	console.log("connectionHandler 의 이벤트 초기화");
+	this.initConnectionHandler();
 	// connection을 가진 id
-	this.connectedPeers = {};
+	//	this.connectedPeers = {};
 
 	// eventEmitter
 	this.eventEmitter = {
@@ -352,16 +383,119 @@ function AirDrop(args) {
 	window.onbeforeunload = this._destory.bind(this);
 }
 
+AirDrop.prototype.initConnectionHandler = function() {
+
+	this.connectionHandler.on('connect', function(args) {
+		// 
+		var peerId = args[0];
+		//alert(peerId + " 에게 연결되었습니다.");
+		if(this.isSeeder === undefined) {
+			this.connectionHandler.initSaver();
+		} else {
+			//alert("연결이 되었으니 파일 정보를 보내야 할 것 같은 기분이 든다.");				
+			console.log("connectionHandler의 FileSender를 file로 초기화합니다");		
+			this.connectionHandler.initSender({
+				"file": this.fileEntry
+			});	
+		}
+		// initSender or
+	}.bind(this));
+	
+	this.connectionHandler.on('disconnect', function(args) {
+		var peerId = args[0];
+		//alert(peerId + " 과 연결이 끊어졌습니다.");
+	});
+
+	this.connectionHandler.on('filePrepared', function() {
+		// 파일 정보를 표시할 수 있다.
+		var fileInfo;
+		if( this.connectionHandler.fileSaver ) { // 내가 받는 측이라면 바로 달라고 요청을 보낸다. 여기에서 수신수락에 대한 질문을 할 수 있다.
+			fileInfo = this.connectionHandler.fileSaver.fileInfo;
+			var opponentId = this.connectionHandler.connection.peer;
+			// 
+			var message = this.nearByMe[opponentId].name+" 에게서\n"+fileInfo.name + '(' + Math.floor(fileInfo.size/1024) +'Kb, ' + fileInfo.type + ') 을(를) 받으시겠습니까?';
+			var result = confirm(message);
+			if (result === true) {
+				this.connectionHandler.transferStart = Date.now();
+				this.connectionHandler.requestBlockTransfer();
+			}
+		} else if(this.connectionHandler.fileSender){
+			fileInfo = this.connectionHandler.fileSender.fileInfo;
+		}
+	}.bind(this));
+
+	this.connectionHandler.on('transferStart', function() {
+		//alert("전송시작");
+		// 프로그래스 바를 만들기 
+		//  fileSaver 나 fileSender 의 blockcontext객체 레퍼런스를 가져온다.
+		this.connectionHandler.loader = new PieLoader({
+			container: document.querySelector(".progress-container")
+			, color: 'rgba(255,255,255,.95)'
+			, fill: false
+			, sourceObject: this.connectionHandler
+			, progressAdapter: function(source) { // 소스에서 progress 값을 리턴하는 함수를 만든다. progress 는 0 ~ 1 이다.
+				return source.getProgress();
+			}
+		});
+		this.connectionHandler.loader.startAnimation();
+		
+	}.bind(this));
+
+	this.connectionHandler.on('transferEnd', function() {
+		//alert("전송끝");
+		//		
+		var fileInfo;
+		if( this.connectionHandler.fileSaver ) {
+			this.connectionHandler.fileSaver.downloadFile();
+			fileInfo = this.connectionHandler.fileSaver.fileInfo;
+		} else if(this.connectionHandler.fileSender){
+			fileInfo = this.connectionHandler.fileSender.fileInfo;
+		}
+		
+		// 걸린 시간과 속도 화면에 표시
+		var duration = (this.connectionHandler.transferEnd - this.connectionHandler.transferStart)/1000;
+		var sizeExpression = this.connectionHandler._getSizeExpression(fileInfo.size);
+		var speed = parseInt((parseFloat(sizeExpression)/ duration)*10)/10;
+		var unit = sizeExpression.replace(/[^a-zA-Z]/g,'');
+		
+		console.log("총 "+duration+"초 걸렸고 속도는 "+ speed+unit+"/s");
+		
+		this.connectionHandler.loader.stopAnimation();
+		this.connectionHandler.loader.destroyLoader();
+		
+		// destroy fileSaver & fileSender
+		if( this.connectionHandler.fileSaver ) {
+			this.connectionHandler.fileSaver = null;
+		}
+		if(this.connectionHandler.fileSender){
+			this.connectionHandler.fileSender = null;
+		}		
+	}.bind(this));
+	
+	this.connectionHandler.on('blockTransfered', function(blockIndex) {
+	//	console.log("[BLOCK] : "+blockIndex[0]);
+		//alert(APP.getProgress());
+		/*
+		var d = document.getElementById("progress-bar");
+		//
+		var progress = this.connectionHandler.getProgress() * 100;	
+		if(progress !== undefined) {
+			d.setAttribute("style", "width:" + progress + "%");
+		}
+		*/
+	}.bind(this));
+
+};
 
 // AirDrop객체 초기화
 AirDrop.prototype._init = function(args) {
 	this.url = args.url;
 
-	// 내 peer 생성
+	// 내 peer id 생성
 	this.peer.on('open', function(id) {
-		// debugger;
+		// 
 		this._createMe(id);
-		// 직전에 로그인한 내 접속이 상대방으로 나오지 않게 이전 접속id를 최신 5개까지만 기록해둠
+		// 직전에 로그인한 내 접속이 상대방으로 나오지 않게 이전 접속id를 기록해둠
 		this._logPreviousId(id);
 
 		// 나의 위도와 경도를 확보한다.
@@ -370,15 +504,14 @@ AirDrop.prototype._init = function(args) {
 
 	}.bind(this));
 
-	// 나에게 connection 요청시
-	this.peer.on('connection', this._connect);
-
+	// 나에게 connection 요청시 이벤트핸들러듣 초기화해야할 것 같다.
+//	this.peer.on('connection', this._connect);
 };
 
 
 // 창이 닫히는 경우 자동적으로 내 정보를 지울 수 있도록 요청한다
 AirDrop.prototype._destory = function() {
-	// debugger;
+	// 
 	// mypeer connection 종료, signaling server와 종료
 	if (!!this.peer && !this.peer.destroyed) {
 		this.peer.destroy();
@@ -394,46 +527,24 @@ AirDrop.prototype._destory = function() {
 };
 
 
-
 // public
-AirDrop.prototype.send = function(targetEl, file) {
+AirDrop.prototype.initializeTransfer = function(targetEl, file) {
+	console.log("InitializeTransfer");					
 	// targetId 가져오기
 	var id = this._getIdByEl(targetEl);
 
+	console.log("주고자 하는 상대방의 ID는 "+id);					
 	// 연결되지 않았던 peer의 경우
-	if (id !== undefined && this.connectedPeers[id] === undefined) {
-		// debugger;
+//	if (id !== undefined && this.connectionHandlers[id] === undefined) {
+		// 
 		// file 이름을 가진 connection 생성, (remotePeer);
-		var remotePeer = this.peer.connect(id, { label: 'file' });
+		// 상대방과 커넥션을 맺고 
+	console.log("이 상대와 연결을 시도합니다.");					
 
-
-		// // open 이벤트 발생시 connect 함수 호출
-		remotePeer.on('open', function() {
-			console.log('remotepeer open');
-			// 상대방이 연결될 수 있도록 정보를 전달함
-			this._connect(remotePeer);
-			// file 전송
-			this._send(remotePeer, file);
-		}.bind(this));
-
-
-		// error 이벤트 발생시 err 경고
-		remotePeer.on('error', function(err) {
-			console.warn('remotepeer error: ' + err);
+		this.connectionHandler.connect(id, {
+			reliable: false,
+			serialization: "none"
 		});
-
-
-		// 종료시
-		remotePeer.on('close', function(id) {
-			console.log('remotepeer close');
-
-			this._closeConnection(id);
-		}.bind(this, id));
-
-
-		// chat과 file connection을 모두 생성했다면 connectedPeers에 id key값에 1을 넣음
-		this.connectedPeers[id] = remotePeer;
-	}	
 };
 
 // public
@@ -452,52 +563,6 @@ AirDrop.prototype.off = function(evtName, fn) {
 	}
 };
 
-AirDrop.prototype._send = function(remotePeer, file) {
-
-	var result = confirm(file.name + '(' + Math.floor(file.size/1024) +'Kb, ' + file.type + ') 을(를) 전송하시겠습니까?');
-	if (result === true) {
-		// 연결된 객체에 file을 전송
-		remotePeer.send(file);
-
-		// 기타 작업을 수행할 수도 있음
-
-	} else {
-		console.log('파일 전송을 거부하셨습니다.');
-
-	}	
-};
-
-
-AirDrop.prototype._connect = function (c) {
-	
-	c.on('data', function(data){
-		var result = confirm(c.peer + '님의 파일을 전송받겠습니까?');
-
-		if (result === true) {
-			if (data.constructor === ArrayBuffer) {
-				var dataView = new Uint8Array(data);
-				// var dataBlob = new Blob([dataView], {type: 'application/octet-binary'});
-				var dataBlob = new Blob([dataView], {type: 'image/png'});
-
-
-				var url = window.URL.createObjectURL(dataBlob);
-				// 자동으로 file download 될 수 있도록 변경
-				console.log(c.peer + ',  url: ' + url);
-
-
-				// blob 해제
-				// window.URL.revokeObjectURL(url);
-			}
-
-		} else {
-			console.log('파일 전송을 거부하셨습니다.');
-
-		}
-
-	}.bind(this));
-
-};
-
 
 AirDrop.prototype._createMe = function(id) {
 	var me = new Neighbor(id, true);
@@ -510,14 +575,13 @@ AirDrop.prototype._closeConnection = function(id) {
 	if (remotePeer !== undefined) {
 		// connection 종료
 		remotePeer.close();
-
 		// user 삭제
 		this._removeUser(id);
 	}
 };
 
 AirDrop.prototype._addUser = function(id) {
-	// debugger;
+	// 
 	var nearByMe = this.nearByMe;
 
 	// others에서 존재여부를 확인
@@ -575,7 +639,7 @@ AirDrop.prototype._requestHandler = function(users) {
 
 
 	// 유저 삭제 & 유지 처리 : 응답에 존재하지 않으면 상대목록 모델에서 삭제
-	// debugger;
+	// 
 	for(var id in nearByMe) {
 		if(!this._containsUserWithSameID(users, nearByMe[id]))
 			this._removeUser(id);
@@ -588,11 +652,6 @@ AirDrop.prototype._requestHandler = function(users) {
 		// nearByMe에 요청받은 id가 존재하지 않는 경우 추가
 		if(!_.contains(this._getPreviousIds(), id)) {
 			this._addUser(id);
-
-			// var newNeighbor = new Neighbor(users[i].id);
-			// ??? 이건 어떤 코드죠??
-			// newNeighbor.parent = nearbyusers;
-			// nearbyusers.push(newNeighbor);
 		}		
 	}.bind(this));	
 };
@@ -638,7 +697,7 @@ AirDrop.prototype._containsUserWithSameID = function(list, value){
 AirDrop.prototype._logPreviousId = function(id) {
 	var prev_id = JSON.parse(sessionStorage["prev_id"]||"[]");
 	prev_id.push(id);
-	if(prev_id.length > 5) prev_id.shift();
+	if(prev_id.length > 1) prev_id.shift();
 	sessionStorage["prev_id"] = JSON.stringify(prev_id);
 }
 
@@ -679,7 +738,8 @@ AirDrop.prototype._getXMLHttp = function() {
 
 
 function App() {
-	this.avatarTemplate = null;
+	this.avatarTemplateMe = null;
+	this.avatarTemplateNeighbor = null;
 	this.userContainerEl = null;
 	this.neighborContainerEl = null;
 	this.airdrop = null;
@@ -687,7 +747,7 @@ function App() {
 	this.init();
 }
 
-
+// UI면을 담당!
 App.prototype.init = function() {
 	this.airdrop = new AirDrop({url: 'http://www.heej.net/2014/airdropbox/nearbyuser.php'})
 	this.airdrop.on('adduser', this.addAvatar.bind(this));
@@ -705,8 +765,6 @@ App.prototype.init = function() {
 	window.addEventListener("resize",this.drawWave);
 };
 
-
-// App.prototype.addAvatar = function(containerEl, neighborObj) {
 App.prototype.addAvatar = function(args) {
 	var neighborObj = args[0];
 	var that = this;
@@ -747,16 +805,24 @@ App.prototype.addAvatar = function(args) {
 			$dropMask.hide();
 				
 			// 파일 전송 시작 처리를 하는 부분	
-			// that.prepareFiletransfer(that.myId, neighborObj.id);
-			// debugger;
-			// file이 동시에 여러개 포함될 경우 처리할 필요 있음.
+			// confirm 으로 파일의 정보를 보여주면서 전송할래? 물어보고 응이라고 응답하면 
 
+			this.airdrop.isSeeder = true;
+			
+			console.log("파일을 드롭하셨군요");
+		
 			var targetEl = e.target.parentNode;
 			var file = e.dataTransfer.files[0];
+			var id = this.airdrop._getIdByEl(targetEl);
 
-			// targetEl로 file을 전송
-			this.airdrop.send(targetEl, file);
-
+			var result = confirm(this.airdrop.nearByMe[id].name+" 에게\n"+file.name + '(' + Math.floor(file.size/1024) +'Kb, ' + file.type + ') 을(를) 전송하시겠습니까?');
+			if (result === true) {
+				console.log(file);
+				this.airdrop.fileEntry = file;
+				this.airdrop.initializeTransfer(targetEl, file);
+			} else {
+				alert('헐 싫음 말구.');
+			}	
 		}.bind(this), false);
 	}
 	neighborObj.el = document.getElementById(neighborObj.id); 
@@ -768,7 +834,7 @@ App.prototype.removeAvatar = function(args) {
 	var neighborObj = args[0];
 	neighborObj.el.parentNode.removeChild(neighborObj.el);
 	// // 모델에서 삭제
-	// debugger;
+	// 
 	// for(var i in this.nearbyusers) {
 	// 	if(this.nearbyusers[i] === neighborObj) {
 	// 		this.nearbyusers.splice(i, 1);
@@ -778,9 +844,6 @@ App.prototype.removeAvatar = function(args) {
 
 App.prototype.drawWave = function() {
 	var svgContainer = document.querySelector(".wave > svg");
-	svgContainer.innerHTML = "!!!@#!@#!@#!@<h1>대다나다</h1>";
-
-//	svgContainer.innerHTML = "";
 	// 창의 가로세로 사이즈 구간에 따른 구의 간격변화를 구현
 	var radiusDiff = null,
 	radiusDiff_h = null ,
