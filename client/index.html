@@ -12,6 +12,9 @@ body, html {
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
+	
+	min-height: 400px;
+
 }
 * {
 	font-family: 'Roboto Condensed', sans-serif;
@@ -19,11 +22,24 @@ body, html {
 	-webkit-font-smoothing: antialiased; /* 이걸 하지 않으면 브라우저마다 폰트 굵기가 다르게 보임 (크롭에서 두껍게. 사파리에선 이쁘게..) */
 	color: white;
 }
+html {
+	background-image: url(http://www.ijailbreak.com/wp-content/uploads/2014/06/ipad-ios8-wallpaper-1024x1024.png);
+	1background-image: url(./image/snowforest.jpg);
+	background-size: cover;
+	1background-image: url(./image/tweed.png);
+}
 body {
-	background-image: url(./image/tweed.png);
+background: -moz-radial-gradient(center, ellipse cover,  rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.7) 100%); /* FF3.6+ */
+background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,rgba(0,0,0,0.1)), color-stop(100%,rgba(0,0,0,0.7))); /* Chrome,Safari4+ */
+background: -webkit-radial-gradient(center, ellipse cover,  rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.7) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-radial-gradient(center, ellipse cover,  rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.7) 100%); /* Opera 12+ */
+background: -ms-radial-gradient(center, ellipse cover,  rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.7) 100%); /* IE10+ */
+background: radial-gradient(ellipse at center,  rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.7) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00000000', endColorstr='#94000000',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+	
 }
 .neighbor-container {
-	position: fixed;
+	position: absolute;
 	top: 10px;
 	width: 100%;
 	text-align: center;
@@ -78,10 +94,17 @@ h1 {
 	background-size: cover;
 	border-radius: 50px;
 	
-	1-webkit-box-shadow: 0px 3px 2px 0px rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.20);
-	1-moz-box-shadow:    0px 3px 2px 0px rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.20);
-	1box-shadow:         0px 3px 2px 0px rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.20);
+	-webkit-box-shadow: 0px 3px 2px 0px rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.20);
+	-moz-box-shadow:    0px 3px 2px 0px rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.20);
+	box-shadow:         0px 3px 2px 0px rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.20);
+	
+	overflow: hidden;
+}
 
+.in-process>.avatar-pic {
+	-webkit-box-shadow:none;
+	-moz-box-shadow:none;
+	box-shadow: none;
 }
 
 .progress-container {
@@ -95,7 +118,20 @@ h1 {
 	border-radius: 55px;
 	z-index: -100;
 	opacity: .8;
+	
+	transition: .3s -webkit-box-shadow linear;
 }
+.in-process .progress-container {
+	-webkit-box-shadow: 0px 3px 2px 0px rgba(40, 40, 40, 0.75),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.25);
+	-moz-box-shadow:    0px 3px 2px 0px rgba(40, 40, 40, 0.75),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.25);
+	box-shadow:         0px 3px 2px 0px rgba(40, 40, 40, 0.75),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.25);
+}
+.in-process .avatar-pic {
+	-webkit-box-shadow: none;
+	-moz-box-shadow:    none;
+	box-shadow:        none;
+}
+
 
 .blind {
 	display: none;
@@ -109,6 +145,7 @@ h1 {
 	-moz-box-shadow:    0px 3px 2px 0px rgba(40, 40, 40, 0.25),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.15),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.15);
 	box-shadow:         0px 3px 2px 0px rgba(40, 40, 40, 0.25),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.15),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.15);
 }
+
 .avatar.dragover > h1 {
 	1background-color: rgba(250,250,250,.9);
 	border-radius: 0 0 8px 8px;
@@ -123,6 +160,96 @@ h1 {
     display: none;
 }
 
+.stream-loader-container {
+	position: absolute;
+	top: 0;
+	left: 50%;
+	margin-left: -60px;
+	margin-top: 75px;
+
+	1background: aqua;
+	width: 120px;
+	height: 500px;
+
+    transform-origin: 50% 0%;
+   	z-index: -200;
+}
+.message {
+	width: 100%;
+	height: 100%;
+	font-size: 28px;
+	line-height: 100px;
+	text-shadow: 0px 0px 26px rgba(0, 0, 0, 1);
+	
+	transition: .3s all linear;
+}
+.in-process .message {
+	background-color: rgba(0,0,0,.4);
+}
+canvas {
+	opacity: .73;
+}
+
+
+.acception-container {
+	position: absolute;
+	width: 100%;
+	background: rgba(255,255,255,.8);
+	top: 50%;	
+	margin-top: -72px;
+	text-align: center;
+	padding-bottom: 15px;
+	z-index: 100;
+	
+	transition: .3s opacity ease-out;
+}
+.acception-container.closing {
+	opacity: 0;
+}
+.acception-container>p {
+	color: black;
+	padding: 15px;
+	padding-bottom: 10px;
+	1box-sizing: content-box;
+}
+.acception-container>.btn {
+	display: inline-block;
+	text-align: center;
+	width: 30%;
+	height: 30px;	
+	background-color: rgba(0,0,0,.2);
+	border-radius: 10px ;
+	line-height: 30px;
+	font-weight: bold;
+	margin: 4px;
+	color: white;
+	cursor: hand;
+	transition: .2s background-color linear, .2s color linear;
+}
+.acception-container>.btn:hover {
+	background-color: rgba(0,0,0,.4);
+}
+
+.acception-container>.btn:active {
+	background: rgba(255,255,255,.88);
+	color: black;
+}
+.github-container {
+	position: absolute;
+	background-image: url(./image/github.png);
+	background-size: cover;
+	width: 40px;
+	height: 40px;
+	bottom: 0;
+	left: 0;
+	margin: 15px;
+	opacity: .8;
+}
+.github-container > a{
+	display: block;
+	width: 100%;
+	height: 100%;	
+}
 </style>
 <div class="wave">
 <svg></svg>	
@@ -131,6 +258,27 @@ h1 {
 </div>
 <div class="user-container">
 </div>
+
+<div class="github-container">
+	<a href="https://github.com/cocagolau/Project_AirDropBox" target="_blank">
+	</a>
+</div>
+<script type="text/template" id="confirm-popup-template-sender">
+<div class="acception-container">
+	<p><%= opponentName %>에게
+	<%= fileName %>.<%= fileType %>(<%= fileSize %>Kb) 을(를) 전송하시겠습니까?</p>
+	<div class="btn no">아니오</div>
+	<div class="btn yes">예</div>
+</div>
+</script>
+<script type="text/template" id="confirm-popup-template-receiver">
+<div class="acception-container">
+	<p><%= opponentName %>으로부터
+	<%= fileName %>.<%= fileType %>(<%= fileSize %>Kb) 을(를) 받으시겠습니까?</p>
+	<div class="btn no">아니오</div>
+	<div class="btn yes">예</div>
+</div>
+</script>
 <script type="text/template" id="wave-template">
 <circle cx="<%= cx %>" cy="<%= cy %>" r="<%= r %>" stroke="<%= color %>" stroke-width="<%= width %>" stroke-opacity="<%= opacity %>" fill-opacity="0.0" />
 </script>
@@ -149,8 +297,11 @@ h1 {
 <div class="progress-container">
 </div>
 <div class="avatar-pic" style="background-image:url(./user_pic/<%= image %>)">
+	<div class="message">
+	</div>
 </div>
 <h1><%= name %></h1>
+<div class="stream-loader-container"></div>
 </div>
 </script>
 <!-- addClass 와 removeClass 용 -->
@@ -165,6 +316,7 @@ h1 {
 <script src="./script/FileSaver.js"></script>
 <script src="./script/ConnectionHandler.js"></script>
 <script src="./script/pieLoader.js"></script>
+<script src="./script/StreamLoader.js"></script>
 
 <script>
 
@@ -318,7 +470,8 @@ Neighbor.prototype.nameDictionary = {
 		,"Nicole"
 		]
 };
-
+var CHUNK_SIZE = 16000;
+var BLOCK_SIZE = 64;
 
 // EventEmitter
 function EventEmitter() {
@@ -354,17 +507,17 @@ function AirDrop(args) {
 	this.nearByMe = {};
 
 	// peer 객체
-	this.peer = new Peer({key: '4uur7cd24jzwipb9'
+	this.peer = new Peer({
+		key: '4uur7cd24jzwipb9'
 		, debug: true
 	});
 
-	
-//	this.connectionHandlers = [];
 	this.connectionHandler = new ConnectionHandler({
-		'CHUNK_SIZE': 16000,  // 16000 byte per binary chunk
-		'BLOCK_SIZE': 64, // 10 binary chunks per one block
+		'CHUNK_SIZE': CHUNK_SIZE,  // 16000 byte per binary chunk
+		'BLOCK_SIZE': BLOCK_SIZE, // 10 binary chunks per one block
 		'userPeer':	this.peer
 	});
+	
 	console.log("connectionHandler 의 이벤트 초기화");
 	this.initConnectionHandler();
 	// connection을 가진 id
@@ -377,6 +530,7 @@ function AirDrop(args) {
 	};
 
 	// 초기화
+	this.confirmPopup = new ConfirmPopup();
 	this._init(args);
 
 	// 종료시 호출 요청
@@ -389,9 +543,7 @@ AirDrop.prototype.initConnectionHandler = function() {
 		// 
 		var peerId = args[0];
 		//alert(peerId + " 에게 연결되었습니다.");
-		if(this.isSeeder === undefined) {
-			this.connectionHandler.initSaver();
-		} else {
+		if(this.fileEntry !== undefined) {
 			//alert("연결이 되었으니 파일 정보를 보내야 할 것 같은 기분이 든다.");				
 			console.log("connectionHandler의 FileSender를 file로 초기화합니다");		
 			this.connectionHandler.initSender({
@@ -412,13 +564,23 @@ AirDrop.prototype.initConnectionHandler = function() {
 		if( this.connectionHandler.fileSaver ) { // 내가 받는 측이라면 바로 달라고 요청을 보낸다. 여기에서 수신수락에 대한 질문을 할 수 있다.
 			fileInfo = this.connectionHandler.fileSaver.fileInfo;
 			var opponentId = this.connectionHandler.connection.peer;
-			// 
-			var message = this.nearByMe[opponentId].name+" 에게서\n"+fileInfo.name + '(' + Math.floor(fileInfo.size/1024) +'Kb, ' + fileInfo.type + ') 을(를) 받으시겠습니까?';
-			var result = confirm(message);
-			if (result === true) {
+			
+			
+			
+			var yesCallback = function(){ // YES 를 눌렀을 경우 실행하는 함수.
 				this.connectionHandler.transferStart = Date.now();
-				this.connectionHandler.requestBlockTransfer();
-			}
+				this.connectionHandler.requestBlockTransfer();				
+			}.bind(this);
+			//debugger;
+			this.confirmPopup.open({
+				templateSelector: "#confirm-popup-template-receiver",
+				opponentName: this.nearByMe[opponentId].name,
+				fileName: fileInfo.name,
+				fileSize: Math.floor(fileInfo.size/1024),
+				fileType: fileInfo.type,
+				yesCallback: yesCallback
+			});
+			
 		} else if(this.connectionHandler.fileSender){
 			fileInfo = this.connectionHandler.fileSender.fileInfo;
 		}
@@ -427,23 +589,63 @@ AirDrop.prototype.initConnectionHandler = function() {
 	this.connectionHandler.on('transferStart', function() {
 		//alert("전송시작");
 		// 프로그래스 바를 만들기 
+		//document.getElementById(this.connectionHandler.connection)
+
+		var opponentId = this.connectionHandler.connection.peer;
+		var opponentDiv = document.getElementById(opponentId);
+		var progressContainer = opponentDiv.querySelector(".progress-container");
+		var streamLoaderContainer = opponentDiv.querySelector(".stream-loader-container");
+		
 		//  fileSaver 나 fileSender 의 blockcontext객체 레퍼런스를 가져온다.
 		this.connectionHandler.loader = new PieLoader({
-			container: document.querySelector(".progress-container")
-			, color: 'rgba(255,255,255,.95)'
+			container: progressContainer
+			, color: 'rgba(255,255,255,.97)'
 			, fill: false
 			, sourceObject: this.connectionHandler
 			, progressAdapter: function(source) { // 소스에서 progress 값을 리턴하는 함수를 만든다. progress 는 0 ~ 1 이다.
 				return source.getProgress();
 			}
 		});
+		
 		this.connectionHandler.loader.startAnimation();
 		
+		var streamLoaderInitParam = {
+			containerEl: streamLoaderContainer
+		};
+		// 내가 ConnectionHandler
+		if(this.connectionHandler.fileSender)
+			streamLoaderInitParam.direction = 'up';
+			
+		this.connectionHandler.streamLoader = new StreamLoader(streamLoaderInitParam);
+		
+		this.connectionHandler.streamLoader.on("loadEnd", function() {
+//			alert("로드끝!");
+			this.connectionHandler.disconnect();
+			this.fileEntry = undefined;
+			this.connectionHandler.streamLoader = undefined;
+			/*
+			this.connectionHandler.streamLoader = undefined;
+						//debugger;
+
+			this.fileEntry = undefined;
+			this.connectionHandler = new ConnectionHandler({
+				'CHUNK_SIZE': CHUNK_SIZE,  // 16000 byte per binary chunk
+				'BLOCK_SIZE': BLOCK_SIZE, // 10 binary chunks per one block
+				'userPeer':	this.peer
+			});
+			*/
+			
+		}.bind(this));
+		
+		var container = document.getElementById(this.connectionHandler.connection.peer);
+		container.setAttribute("class", "avatar in-process");		
 	}.bind(this));
 
 	this.connectionHandler.on('transferEnd', function() {
 		//alert("전송끝");
 		//		
+		this.connectionHandler.streamLoader.finishStream();
+		
 		var fileInfo;
 		if( this.connectionHandler.fileSaver ) {
 			this.connectionHandler.fileSaver.downloadFile();
@@ -459,33 +661,65 @@ AirDrop.prototype.initConnectionHandler = function() {
 		var unit = sizeExpression.replace(/[^a-zA-Z]/g,'');
 		
 		console.log("총 "+duration+"초 걸렸고 속도는 "+ speed+unit+"/s");
+		var container = document.getElementById(this.connectionHandler.connection.peer);
 		
+		container.querySelector(".avatar-pic>.message").innerHTML = "";
+		container.setAttribute("class", "avatar");					
 		this.connectionHandler.loader.stopAnimation();
 		this.connectionHandler.loader.destroyLoader();
 		
-		// destroy fileSaver & fileSender
-		if( this.connectionHandler.fileSaver ) {
-			this.connectionHandler.fileSaver = null;
-		}
-		if(this.connectionHandler.fileSender){
-			this.connectionHandler.fileSender = null;
-		}		
+		/*
+		// 새로운 커넥션 핸들러를 가짐.
+		this.connectionHandler = new ConnectionHandler({
+			'CHUNK_SIZE': 16000,  // 16000 byte per binary chunk
+			'BLOCK_SIZE': 64, // 10 binary chunks per one block
+			'userPeer':	this.peer
+		});
+		*/
 	}.bind(this));
 	
 	this.connectionHandler.on('blockTransfered', function(blockIndex) {
-	//	console.log("[BLOCK] : "+blockIndex[0]);
-		//alert(APP.getProgress());
-		/*
-		var d = document.getElementById("progress-bar");
-		//
-		var progress = this.connectionHandler.getProgress() * 100;	
-		if(progress !== undefined) {
-			d.setAttribute("style", "width:" + progress + "%");
+		// 블록이 저장될 때 마다 현재 평균속도에 따른 남은 시간을 업데이트해준다.
+		this.connectionHandler.transferEnd = Date.now();
+
+		var timeDiff = this.connectionHandler.transferEnd - this.connectionHandler.transferStart;
+		var processor = this.connectionHandler.fileSaver || this.connectionHandler.fileSender;
+		var totalSize = processor.fileInfo.size;
+		var progression = this.connectionHandler.getProgress();
+
+		var transferVelocity = (progression * totalSize) / timeDiff;
+		var remainTime = ((1-progression)*totalSize)/transferVelocity;
+		remainTime = Math.floor(remainTime/1000);
+		var expression;
+		if(remainTime < 60) {
+			expression = remainTime + "s";
+		} else if (remainTime < 3600) {
+			if(remainTime%60 > 0)
+				expression = Math.floor(remainTime/60) + "m " + remainTime%60 + "s";
+			else 
+				expression = Math.floor(remainTime/60) + "m";
+		} else if (remainTime < (3600*24)) {
+			if(remainTime%3600 > 0)
+				expression = Math.floor(remainTime/3600) + "h "+ Math.floor((remainTime%3600)/60) + "m";
+			else
+				expression = Math.floor(remainTime/3600) + "h";
+		} else if (remainTime < (3600*24)*7) {
+			expression = Math.floor(remainTime/(3600*24)) + "d";
+		} else {
+			expression = "∞";
 		}
-		*/
+		//console.log("남은시간 " +remainTime + " 초");
+		// connectionHandler 에서 알 수 있는 상대방 ID에 대해 남은 초를 표시할 엘리먼트를 얻고 이의 내용을 업데이트 해준다.
+		var container = document.getElementById(this.connectionHandler.connection.peer);
+		container.querySelector(".avatar-pic>.message").innerHTML = expression;
+
 	}.bind(this));
 
 };
+
+AirDrop.prototype._init = function(args) {
+
+}
 
 // AirDrop객체 초기화
 AirDrop.prototype._init = function(args) {
@@ -542,7 +776,7 @@ AirDrop.prototype.initializeTransfer = function(targetEl, file) {
 	console.log("이 상대와 연결을 시도합니다.");					
 
 		this.connectionHandler.connect(id, {
-			reliable: false,
+			reliable: true,
 			serialization: "none"
 		});
 };
@@ -737,6 +971,98 @@ AirDrop.prototype._getXMLHttp = function() {
 };
 
 
+function ConfirmPopup() {
+	this.template;
+	this.containerEl;
+	this.yesCallback;
+	this.spring;
+/*
+			document.querySelector(".acception-container").setAttribute("style", "display: block");
+			document.querySelector(".acception-container>p").innerHTML = this.airdrop.nearByMe[id].name+" 에게\n"+file.name + '(' + Math.floor(file.size/1024) +'Kb, ' + file.type + ') 을(를) 전송하시겠습니까?';
+			
+			document.querySelector(".acception-container>.btn.yes")
+*/	
+}
+
+ConfirmPopup.prototype.open = function(param) {
+	var container = document.querySelector(".acception-container");
+	if(container)
+		document.body.removeChild(container);
+	
+	var templateStr = document.querySelector(param.templateSelector).innerHTML;
+	this.template = _.template(templateStr);
+	this.yesCallback = param.yesCallback;
+	var partialHTML = this.template(param);
+	document.body.insertAdjacentHTML("beforeend",partialHTML);
+	this.containerEl = document.querySelector(".acception-container");
+
+	this.containerEl.querySelector(".btn.no").addEventListener("click",function(){
+		this.close();
+	}.bind(this),false);
+	this.containerEl.querySelector(".btn.yes").addEventListener("click",function(){
+		this.yesCallback();
+		this.close();
+	}.bind(this),false);
+	
+	this.setDefaultSpring();
+	this.spring.setEndValue(2);	
+/*
+				this.confirmPopup.open({
+				opponentName: this.airdrop.nearByMe[id].name,
+				fileName: file.name,
+				fileSize: Math.floor(file.size/1024),
+				fileType: file.type.
+				yesCallback: yesCallback
+			});
+*/
+};
+// 뿅 나타나게 스타일을 컨트롤 해주는 스프링 핸들러
+ConfirmPopup.prototype.springHandler = function(el, val){
+	/*
+	el.style.mozTransform =
+	el.style.msTransform =
+	el.style.webkitTransform =
+	el.style.transform = 'translateZ(' + (1-val) + ')';
+	//el.style.transform = 'scale3d(' + (1-val) + ', ' + (1-val) + ', 1)';
+	*/
+	el.setAttribute("style", "margin-top:"+((100*val-100)+25)+"px");
+};
+
+ConfirmPopup.prototype.setDefaultSpring = function(){
+	var that = this;
+	var springSystem = new rebound.SpringSystem();
+	var spring = springSystem.createSpring(30, 10);
+	spring.addListener({
+		onSpringUpdate: function(spring) {
+			var val = spring.getCurrentValue();
+			val = rebound.MathUtil.mapValueInRange(val, 0, 1, 1, 0.5);
+			that.springHandler(that.containerEl, val);
+		}
+	});	
+	this.spring = spring;
+}
+
+ConfirmPopup.prototype.setSpring = function(springHandler){
+	var that = this;
+	var springSystem = new rebound.SpringSystem();
+	var spring = springSystem.createSpring(70, 3);
+	spring.addListener({
+		onSpringUpdate: function(spring) {
+			var val = spring.getCurrentValue();
+			val = rebound.MathUtil.mapValueInRange(val, 0, 1, 1, 0.5);
+			springHandler(that.containerEl, val);
+		}
+	});	
+	this.spring = spring;
+}
+
+ConfirmPopup.prototype.close = function() {
+	if(this.containerEl) {
+		this.containerEl.setAttribute("class", "acception-container closing");
+		this.containerEl.addEventListener( 'webkitTransitionEnd', function( event ) { document.body.removeChild(this.containerEl); }.bind(this), false );	
+	}
+};
+
 function App() {
 	this.avatarTemplateMe = null;
 	this.avatarTemplateNeighbor = null;
@@ -744,14 +1070,14 @@ function App() {
 	this.neighborContainerEl = null;
 	this.airdrop = null;
 	
-	this.init();
+	this.init();	
 }
 
 // UI면을 담당!
 App.prototype.init = function() {
 	this.airdrop = new AirDrop({url: 'http://www.heej.net/2014/airdropbox/nearbyuser.php'})
 	this.airdrop.on('adduser', this.addAvatar.bind(this));
-	this.airdrop.on('removeuser', this.removeAvatar.bind(this));
+	this.airdrop.on('removeuser', this._removeuserHandler.bind(this));
 	
 	this.avatarTemplateMe = _.template(document.getElementById("avatar-template-me").innerHTML);
 	this.avatarTemplateNeighbor = _.template(document.getElementById("avatar-template-neighbor").innerHTML);
@@ -762,7 +1088,12 @@ App.prototype.init = function() {
 	// 첫 wave를 그리고 
 	this.drawWave();
 	// 화면사이즈가 바뀔 때 마다 다시 wave를 그려주는 이벤트핸들러를 등록한다.
-	window.addEventListener("resize",this.drawWave);
+	window.addEventListener("resize",this._resizeHandler.bind(this));
+};
+
+App.prototype._removeuserHandler = function(neighborObj) {
+	this.removeAvatar(neighborObj[0]);
+	this.setStreamLoaderContainer();
 };
 
 App.prototype.addAvatar = function(args) {
@@ -788,9 +1119,11 @@ App.prototype.addAvatar = function(args) {
 		var dropMask = overArea.querySelector(".drop-mask");
 		overArea.addEventListener('dragover', function(e) {
 	        e.stopPropagation();
-	        e.preventDefault();		
-			$overArea.addClass('dragover');
-			$dropMask.show();
+	        e.preventDefault();	
+	        if(e.target.className !== "stream-loader-container")	{
+				$overArea.addClass('dragover');
+				$dropMask.show();
+			}
 		}, false);
 		dropMask.addEventListener('dragleave', function(e) {
 		    e.stopPropagation();
@@ -807,31 +1140,38 @@ App.prototype.addAvatar = function(args) {
 			// 파일 전송 시작 처리를 하는 부분	
 			// confirm 으로 파일의 정보를 보여주면서 전송할래? 물어보고 응이라고 응답하면 
 
-			this.airdrop.isSeeder = true;
 			
 			console.log("파일을 드롭하셨군요");
 		
 			var targetEl = e.target.parentNode;
 			var file = e.dataTransfer.files[0];
 			var id = this.airdrop._getIdByEl(targetEl);
-
-			var result = confirm(this.airdrop.nearByMe[id].name+" 에게\n"+file.name + '(' + Math.floor(file.size/1024) +'Kb, ' + file.type + ') 을(를) 전송하시겠습니까?');
-			if (result === true) {
-				console.log(file);
+			
+			var yesCallback = function(){ // YES 를 눌렀을 경우 실행하는 함수.
 				this.airdrop.fileEntry = file;
-				this.airdrop.initializeTransfer(targetEl, file);
-			} else {
-				alert('헐 싫음 말구.');
-			}	
-		}.bind(this), false);
+				this.airdrop.initializeTransfer(targetEl, file);				
+			}.bind(this);
+			
+			this.airdrop.confirmPopup.open({
+				templateSelector: "#confirm-popup-template-sender",
+				opponentName: this.airdrop.nearByMe[id].name,
+				fileName: file.name,
+				fileSize: Math.floor(file.size/1024),
+				fileType: file.type,
+				yesCallback: yesCallback
+			});
+		}.bind(this),false);
+			
 	}
 	neighborObj.el = document.getElementById(neighborObj.id); 
 	neighborObj.setDefaultSpring();
 	neighborObj.spring.setEndValue(2);
+
+	this.setStreamLoaderContainer();
 };
 
 App.prototype.removeAvatar = function(args) {
-	var neighborObj = args[0];
+	var neighborObj = args;
 	neighborObj.el.parentNode.removeChild(neighborObj.el);
 	// // 모델에서 삭제
 	// 
@@ -841,6 +1181,10 @@ App.prototype.removeAvatar = function(args) {
 	// 	}
 	// }
 };
+App.prototype._resizeHandler = function() {
+	this.drawWave();
+	this.setStreamLoaderContainer();
+}
 
 App.prototype.drawWave = function() {
 	var svgContainer = document.querySelector(".wave > svg");
@@ -871,7 +1215,7 @@ App.prototype.drawWave = function() {
 			cx: centerX,
 			cy: centerY,
 			r: startRadius+radiusDiff*i,
-			color: "white",
+			color: "rgba(255,255,255,.7)",
 			width: 1,
 			opacity: 0.6
 		});
@@ -879,10 +1223,45 @@ App.prototype.drawWave = function() {
 	svgContainer.innerHTML = wavePartialHTML;
 };
 
+App.prototype.setStreamLoaderContainer = function() {
+	var userAvatar = document.querySelector(".user-container>.avatar");
+	if(userAvatar) {
+		var x1 = getPosition(userAvatar).x;
+		var y1 = getPosition(userAvatar).y;
+		
+		var neighborAvatars = document.querySelectorAll(".neighbor-container>.avatar");
+		[].forEach.call(
+			neighborAvatars, 
+			function(neighborAvatar){
+				var x2 = getPosition(neighborAvatar).x;
+				var y2 = getPosition(neighborAvatar).y;
+		
+				var theta = Math.atan((x2-x1)/Math.abs(y2-y1));
+				var slide = Math.sqrt((Math.pow(x2-x1,2)+Math.pow(y2-y1,2)))*1.05;
 
+				var streamLoaderContainer = neighborAvatar.querySelector(".stream-loader-container");
+				streamLoaderContainer.setAttribute("style", "-webkit-transform: rotate("+(theta*160/Math.PI)+"deg);height:"+slide+"px;");
+				
+				if(this.airdrop.connectionHandler.streamLoader)
+					this.airdrop.connectionHandler.streamLoader.updateSize();
+					
+			}.bind(this)
+		);
+	}
+}
 // 현재는 내 아이디가 자동생성이지만 
 // 인자로 내 아이디를 넘기면서 APP을 생성해야 한다.
 var app = new App();
 
-
+function getPosition(element) {
+    var xPosition = 0;
+    var yPosition = 0;
+  
+    while(element) {
+        xPosition += (element.offsetLeft - element.scrollLeft + element.clientLeft);
+        yPosition += (element.offsetTop - element.scrollTop + element.clientTop);
+        element = element.offsetParent;
+    }
+    return { x: xPosition, y: yPosition };
+};
 </script>

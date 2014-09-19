@@ -83,7 +83,7 @@
 			//debugger;
 			return undefined;
 		}
-		debugger;
+		//debugger;
 	};
 				
 	ConnectionHandler.prototype.on = function(evtName, fn) {
@@ -162,6 +162,7 @@
 					// 근데 이 시점에서 보낸 쳥크수가 총 쳥크와 같다면 transferEnd 가 된다.
 					if(this.fileSender.blockTranferContext.sentChunkCount === this.fileSender.blockTranferContext.totalChunkCount) {
 						this.transferEnd = Date.now();
+						console.log("쳥크 다 줬따!!: "+this.transferEnd);
 						this._eventEmitter.transferEnd.trigger();
 					}
 				}
@@ -187,10 +188,16 @@
 	ConnectionHandler.prototype.connect = function(peer_id){
 		// Connection을 요청한다.
 		this.connection = this.peer.connect(peer_id);
+
 		// 커넥션이 맺어졌을때의 콜백 
 		this.initConnectionHandler(this.connection);
 	};
-	
+
+	ConnectionHandler.prototype.disconnect = function(){
+		// Connection을 요청한다.
+		//this.peer.disconnect();
+	};
+		
 	// TODO : UI 관련 인데 돔 작업은 아님. 어쩔?!
 	ConnectionHandler.prototype._getSizeExpression = function(size) { // byte
 		var result = size;
@@ -233,6 +240,7 @@
 				this.transferEnd = Date.now();
 				console.log("쳥크 다바다따!!: "+this.transferEnd);
 				this._eventEmitter.transferEnd.trigger();
+				this.fileSaver.off("blockSaved", blockSavedCallback);	
 			}
 			// 다 안받았으면 다음 블록을 보내달라고 송신자에게 응답을 보낸다.
 			else {
@@ -261,8 +269,8 @@
 		var instancePreparedCallback = function() {
 			this.fileSaver.init({
 				file: initParam.file,
-				chunkSize: initParam.chunkSize,
-				blockSize: initParam.blockSize
+				chunkSize: this.CHUNK_SIZE,
+				blockSize: this.BLOCK_SIZE
 			});				
 		}.bind(this);
 		
