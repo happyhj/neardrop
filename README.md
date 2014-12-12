@@ -1,7 +1,20 @@
-Project_AirDropBox
+NearDrop (playRTC)
 ==================
 
 ** 최신 크롬 브라우저만 지원합니다 **
+# 이슈 
+웹캠과 마이크가 있고, 권한 허가하는 과정을 거치지 않으면 1:1 데이타 채널연결이 형성되지 않는다.
+
+# 2014. 12. 12
+Peer.js 를 제거하고 SKT의 playRTC 적용
+peerjs api 모양으로 사용할  수 있게 해주는 아답터 모듈을 제작하여 사용(이 모듈을 peer.js 라는 이름으로 넣었다)
+
+다음 링크에서 데모를 볼 수 있다.
+http://neardrop.heej.net:5400/
+
+PlayRTC 주소
+http://www.playrtc.com/
+
 
 # 2014. 9. 13
 
