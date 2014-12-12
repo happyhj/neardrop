@@ -1,0 +1,16 @@
+{
+  "name": "SKTPlayRTCSerivceBroker",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node startup.js"
+  },
+  "dependencies": {
+	  "express": "3.2.6",
+      "jade": "*",
+      "hogan-express": "*",
+      "request": "2.37.0",
+      "promise": "5.0.0",
+      "sqlite3": "*"
+  }
+}
