@@ -153,7 +153,9 @@ UserController.prototype._requestHandler = function(users) {
 	users.forEach(function(user) {
 		var id = user.id;
 		// 나의 과거 접속 흔적은 무시
-		if (_.contains(this._getPreviousIds(), id)) continue;
+		if (_.contains(this._getPreviousIds(), id)) {
+			return;
+		}
 		// neighbors에 요청받은 id가 존재하지 않는 경우 추가
 		if (!_.contains(neighbors, id)) {
 			this._addUser(id);

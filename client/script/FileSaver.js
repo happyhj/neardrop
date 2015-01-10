@@ -34,10 +34,9 @@ FileSaver.prototype.init = function() {
 						    }, this._errorHandler);
 						}
 					}
-					console.log(this);
 				}.bind(this), this._errorHandler);
 			}.bind(this), this._errorHandler);
-		}
+		}.bind(this);
 		
 		removeAllFiles(fs);
 		// fileSaver 인스턴스가 준비되면 DataController가 파일을 지정해주게 된다
