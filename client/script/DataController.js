@@ -87,9 +87,7 @@ DataController.prototype.initListeners = function() {
 	this.fileSaver.on('fileSavePrepared', function(fileInfo) {
 		// UI에서 다루도록 이벤트를 상위 계층으로 올린다.
 		this.emit('fileSavePrepared', fileInfo);
-	}.bind(this));
-
-	this.fileSender.on("blockContextInitialized", this.sendDataChunk.bind(this));	
+	}.bind(this));	
 
 	this.fileSender.on("blockSent", function() {
 		this.emit('updateProgress', this.getProgress());

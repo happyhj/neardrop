@@ -17,7 +17,7 @@ FileSender.prototype.init = function() {
 };
 
 FileSender.prototype.initListeners = function() {
-
+	this.on("blockContextInitialized", this.sendDataChunk);
 };
 
 FileSender.prototype.setFile = function(file, chunkSize, blockSize) {	
