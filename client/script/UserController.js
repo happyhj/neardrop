@@ -89,44 +89,51 @@ UserController.prototype._sendRequest = function(coords) {
 	var myId = this.me.id;
 
 	// 유저의 정보를 담아 요청 보내기
-	// var xmlhttp = this._getXMLHttp();
 
 	// JQuery로 변경해보기
-	$.ajax({
-		url: this.url,
-		type: 'POST',
-		data: {
-			cmd: "getNeighbors",
-			id: myId,
-			longitude: coords.longitude,
-			latitude: coords.latitude
-		},
-		headers: {
-			"Content-type": "application/x-www-form-urlencoded"
-		},
-		dataType: 'json',
-		success: function (data) {
-			var users = JSON.parse(data);
-			// 왜인지 몰라도 핸들러없이 콜백이 설정될 때가 있으므로 있을때만 요청결과 처리하도록 한다.
-
-			// handler를 조금 더 깔끔하게 처리할 수 있을 것 같음
-			// if (handler) handler(neighbors);
-			this._requestHandler(users);
-		}.bind(this)
-	});
-	// xmlhttp.open("POST", this.url, true);
-	// xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-	// xmlhttp.send("cmd=getNeighbors&id="+myId+"&longitude="+coords.longitude+"&latitude="+coords.latitude);	
-	// xmlhttp.onreadystatechange = function(){
-	// 	if (xmlhttp.readyState==4 && xmlhttp.status==200 && xmlhttp.responseText.length>0){
-	// 		var neighbors = JSON.parse(xmlhttp.responseText);
+	// $.ajax({
+	// 	url: this.url,
+	// 	type: 'POST',
+	// 	data: {
+	// 		cmd: "getNeighbors",
+	// 		id: myId,
+	// 		longitude: coords.longitude,
+	// 		latitude: coords.latitude
+	// 	},
+	// 	headers: {
+	// 		"Content-type": "application/x-www-form-urlencoded"
+	// 	},
+	// 	dataType: 'json',
+	// 	success: function (data) {
+	// 		var users = JSON.parse(data);
 	// 		// 왜인지 몰라도 핸들러없이 콜백이 설정될 때가 있으므로 있을때만 요청결과 처리하도록 한다.
 
 	// 		// handler를 조금 더 깔끔하게 처리할 수 있을 것 같음
 	// 		// if (handler) handler(neighbors);
-	// 		this._requestHandler(neighbors);
-	// 	}
-	// }.bind(this);
+	// 		this._requestHandler(users);
+	// 	}.bind(this)
+	// });
+
+	var xmlhttp = null;
+
+	if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
+		xmlhttp = new XMLHttpRequest();
+	} else {// code for IE6, IE5
+		xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+	}
+	xmlhttp.open("POST", this.url, true);
+	xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+	xmlhttp.send("cmd=getNeighbors&id="+myId+"&longitude="+coords.longitude+"&latitude="+coords.latitude);	
+	xmlhttp.onreadystatechange = function(){
+		if (xmlhttp.readyState==4 && xmlhttp.status==200 && xmlhttp.responseText.length>0){
+			var neighbors = JSON.parse(xmlhttp.responseText);
+			// 왜인지 몰라도 핸들러없이 콜백이 설정될 때가 있으므로 있을때만 요청결과 처리하도록 한다.
+
+			// handler를 조금 더 깔끔하게 처리할 수 있을 것 같음
+			// if (handler) handler(neighbors);
+			this._requestHandler(neighbors);
+		}
+	}.bind(this);
 };
 
 // server로부터 전달받은 정보를 처리하는 handler
