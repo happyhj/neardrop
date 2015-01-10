@@ -98,7 +98,7 @@ FileSender.prototype.sendDataChunk = function(conn) {
 		chunkSize = this.blockTranferContext.chunkSize;
 
 	// 
-	if(this.blockTranferContext.blockSize =< chunkIndex) {
+	if(this.blockTranferContext.blockSize <= chunkIndex) {
 		return; 
 	}
 
