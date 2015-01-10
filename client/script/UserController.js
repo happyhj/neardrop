@@ -33,7 +33,7 @@ UserController.prototype.init = function(url) {
 		// 여기에 정보요청 -> 모델 업뎃 -> UI싱크(상대유저목록) 과정을 1초당 한번씩 수행하도록 하는 콜백을 달았다.
 		this._getLocation();
 
-		this.emit('peerCreated', peer);
+		this.emit('peerCreated', this.peer);
 	}.bind(this));
 };
 
@@ -195,3 +195,28 @@ UserController.prototype.getNeighborByEl = function(el) {
 	}
 	return false;
 }
+
+// 창이 닫히는 경우 자동적으로 내 정보를 지울 수 있도록 요청한다
+UserController.prototype._destory = function() {
+	// 
+	// mypeer connection 종료, signaling server와 종료
+	if (!!this.peer && !this.peer.destroyed) {
+		this.peer.destroy();
+	}
+
+	// server에서 내 정보 삭제
+	var myId = this.me.id;
+	
+	$.ajax({
+		url: this.url,
+		type: 'POST',
+		data: {
+			cmd: "delete",
+			id: myId
+		},
+		headers: {
+			"Content-type": "application/x-www-form-urlencoded"
+		},
+		dataType: 'json'
+	});
+};

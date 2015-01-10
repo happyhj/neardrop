@@ -17,6 +17,9 @@ DataController.prototype.init = function() {
 	this.fileEntry = null;
 	this.fileSaver = new FileSaver();
 	this.fileSender = new FileSender();
+
+	this.transferStart = null;
+	this.transferEnd = null;
 };
 
 DataController.prototype.setPeer = function(peer) {
@@ -42,6 +45,10 @@ DataController.prototype.connect = function(opponent, file) {
 		serialization: "none"
 	});
 	this._setConnectionHandlers();
+};
+
+DataController.prototype.disconnect = function() {
+	//this.peer.disconnect();
 };
 
 DataController.prototype._setConnectionHandlers = function() {
@@ -73,141 +80,26 @@ DataController.prototype.initListeners = function() {
 		console.log(peerId + " 과 연결이 끊어졌습니다.");
 	});
 
-	this.fileSaver.on('fileSendPrepared', function(fileInfo) {
-		
+	this.fileSender.on('fileSendPrepared', function(fileInfo) {
+		// Do nothing. wait for response.
 	}.bind(this));
 
 	this.fileSaver.on('fileSavePrepared', function(fileInfo) {
-		// App에서 다루도록 이벤트를 상위 계층으로 올린다.
+		// UI에서 다루도록 이벤트를 상위 계층으로 올린다.
 		this.emit('fileSavePrepared', fileInfo);
 	}.bind(this));
 
-	this.on('transferStart', function() {
-		//alert("전송시작");
-		// 프로그래스 바를 만들기 
-		//document.getElementById(this.connection)
+	this.fileSender.on("blockContextInitialized", this.sendDataChunk.bind(this));	
 
-		var opponentId = this.connection.peer;
-		var opponentDiv = document.getElementById(opponentId);
-		var progressContainer = opponentDiv.querySelector(".progress-container");
-		var streamLoaderContainer = opponentDiv.querySelector(".stream-loader-container");
-		
-		//  fileSaver 나 fileSender 의 blockcontext객체 레퍼런스를 가져온다.
-		this.loader = new PieLoader({
-			container: progressContainer
-			, color: 'rgba(255,255,255,.97)'
-			, fill: false
-			, sourceObject: this
-			, progressAdapter: function(source) { // 소스에서 progress 값을 리턴하는 함수를 만든다. progress 는 0 ~ 1 이다.
-				return source.getProgress();
-			}
-		});
-		
-		this.loader.startAnimation();
-		
-		var streamLoaderInitParam = {
-			containerEl: streamLoaderContainer
-		};
-		// 내가
-		if(this.fileSender)
-			streamLoaderInitParam.direction = 'up';
-			
-		this.streamLoader = new StreamLoader(streamLoaderInitParam);
-		
-		this.streamLoader.on("loadEnd", function() {
-			this.disconnect();
-			this.fileEntry = undefined;
-			this.streamLoader = undefined;
-			/*
-			this.streamLoader = undefined;
-						//debugger;
-
-			this.fileEntry = undefined;
-			this = new ConnectionHandler({
-				'CHUNK_SIZE': CHUNK_SIZE,  // 16000 byte per binary chunk
-				'BLOCK_SIZE': BLOCK_SIZE, // 10 binary chunks per one block
-				'userPeer':	this.peer
-			});
-			*/
-			
-		}.bind(this));
-		
-		var container = document.getElementById(this.connection.peer);
-		container.setAttribute("class", "avatar in-process");		
+	this.fileSender.on("blockSent", function() {
+		this.emit('updateProgress', this.getProgress());
 	}.bind(this));
 
-	this.on('transferEnd', function() {
-		//alert("전송끝");
-		//		
-		this.streamLoader.finishStream();
-		
-		var fileInfo;
-		if( this.fileSaver ) {
-			this.fileSaver.downloadFile();
-			fileInfo = this.fileSaver.fileInfo;
-		} else if(this.fileSender){
-			fileInfo = this.fileSender.fileInfo;
-		}
-		
-		// 걸린 시간과 속도 화면에 표시
-		var duration = (this.transferEnd - this.transferStart)/1000;
-		var sizeExpression = this._getSizeExpression(fileInfo.size);
-		var speed = parseInt((parseFloat(sizeExpression)/ duration)*10)/10;
-		var unit = sizeExpression.replace(/[^a-zA-Z]/g,'');
-		
-		console.log("총 "+duration+"초 걸렸고 속도는 "+ speed+unit+"/s");
-		var container = document.getElementById(this.connection.peer);
-		
-		container.querySelector(".avatar-pic>.message").innerHTML = "";
-		container.setAttribute("class", "avatar");					
-		this.loader.stopAnimation();
-		this.loader.destroyLoader();
-		
-		/*
-		// 새로운 커넥션 핸들러를 가짐.
-		this = new ConnectionHandler({
-			'CHUNK_SIZE': 16000,  // 16000 byte per binary chunk
-			'BLOCK_SIZE': 64, // 10 binary chunks per one block
-			'userPeer':	this.peer
-		});
-		*/
-	}.bind(this));
-	
-	this.on('blockTransfered', function(blockIndex) {
-		// 블록이 저장될 때 마다 현재 평균속도에 따른 남은 시간을 업데이트해준다.
-		this.transferEnd = Date.now();
+	this.fileSender.on('transferEnd', function() {
+		this.disconnect();
+		this.fileEntry = null;
 
-		var timeDiff = this.transferEnd - this.transferStart;
-		var processor = this.fileSaver || this.fileSender;
-		var totalSize = processor.fileInfo.size;
-		var progression = this.getProgress();
-
-		var transferVelocity = (progression * totalSize) / timeDiff;
-		var remainTime = ((1-progression)*totalSize)/transferVelocity;
-		remainTime = Math.floor(remainTime/1000);
-		var expression;
-		if(remainTime < 60) {
-			expression = remainTime + "s";
-		} else if (remainTime < 3600) {
-			if(remainTime%60 > 0)
-				expression = Math.floor(remainTime/60) + "m " + remainTime%60 + "s";
-			else 
-				expression = Math.floor(remainTime/60) + "m";
-		} else if (remainTime < (3600*24)) {
-			if(remainTime%3600 > 0)
-				expression = Math.floor(remainTime/3600) + "h "+ Math.floor((remainTime%3600)/60) + "m";
-			else
-				expression = Math.floor(remainTime/3600) + "h";
-		} else if (remainTime < (3600*24)*7) {
-			expression = Math.floor(remainTime/(3600*24)) + "d";
-		} else {
-			expression = "∞";
-		}
-		//console.log("남은시간 " +remainTime + " 초");
-		// connectionHandler 에서 알 수 있는 상대방 ID에 대해 남은 초를 표시할 엘리먼트를 얻고 이의 내용을 업데이트 해준다.
-		var container = document.getElementById(this.connection.peer);
-		container.querySelector(".avatar-pic>.message").innerHTML = expression;
-
+		this.emit('transferEnd');
 	}.bind(this));
 };
 
@@ -231,16 +123,19 @@ DataController.prototype._handleMessage = function(message) {
 				console.log("blockIndex : " + message.blockIndex);	
 				var blockIndex = message.blockIndex;
 				
+				// 블록을 메모리에 로딩 및 청킹
 				this.fileSender.initBlockContext(blockIndex);
-				// 보내는 쪽의 전송시작 이벤트 
+				// 만약 첫 요청이었다면
 				if(blockIndex == 0) {
-					this.emit('transferStart');
+					// 어떤 상대방과 연결되었는지 정보를 UI에 이때 전달
+					this.emit('showProgress', this.connection.peer, 'up');
+					// 속도 계산용 기록
 					this.transferStart = Date.now();
 				}
 				break;
 			case "requestChunk": // 수신자가 다 받았음을 알리면 다음 쳥크를 보낸다.
 				//console.log("[Connection : _handleMessage] incoming message requestChunk");
-				this.sendDataChunk();
+				this.fileSender.sendDataChunk(this.connection);
 				break;
 			default:
 				break;
@@ -267,13 +162,25 @@ DataController.prototype.askOpponent = function(file) {
 DataController.prototype.requestBlockTransfer = function() {
 	if(this.connection && this.connection.open===true) {	
 		this.fileSaver.blockTranferContext.blockIndex = this.fileSaver.getNextBlockIndexNeeded();
+		// 수락 메시지 전송
 		this.connection.send({
 			"kind": "requestBlock",
 			"blockIndex": this.fileSaver.blockTranferContext.blockIndex
 		});
 		
-		// 받는 쪽의 전송시작 이벤트 
+		// 만약 첫 요청이었다면 프로그레스 바 생성
 		if(this.fileSaver.blockTranferContext.blockIndex == 0)
-			this.emit('transferStart');
+			// 어떤 상대방과 연결되었는지를 UI에 이때 전달
+			this.emit('showProgress', this.connection.peer, 'down');
 	}
+};
+
+DataController.prototype.getProgress = function() {
+	var context = this.fileSender.blockTranferContext || this.fileSaver.blockTranferContext;
+	// 둘 다 잡히지 않을 경우
+	if (!context) {
+		return undefined;
+	}
+	var progress = context.sentChunkCount / context.totalChunkCount;
+	return progress;
 };

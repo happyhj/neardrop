@@ -3,12 +3,6 @@ function ConfirmPopup() {
 	this.containerEl;
 	this.yesCallback;
 	this.spring;
-/*
-			document.querySelector(".acception-container").setAttribute("style", "display: block");
-			document.querySelector(".acception-container>p").innerHTML = this.airdrop.nearByMe[id].name+" 에게\n"+file.name + '(' + Math.floor(file.size/1024) +'Kb, ' + file.type + ') 을(를) 전송하시겠습니까?';
-			
-			document.querySelector(".acception-container>.btn.yes")
-*/	
 }
 
 ConfirmPopup.prototype.open = function(param) {
@@ -16,13 +10,13 @@ ConfirmPopup.prototype.open = function(param) {
 	if(container)
 		document.body.removeChild(container);
 	
-	var templateStr = document.querySelector(param.templateSelector).innerHTML;
-	this.template = _.template(templateStr);
-	this.yesCallback = param.yesCallback;
+	this.template = param.template;
 	var partialHTML = this.template(param);
 	document.body.insertAdjacentHTML("beforeend",partialHTML);
+	
+	this.yesCallback = param.yesCallback;
+	
 	this.containerEl = document.querySelector(".acception-container");
-
 	this.containerEl.querySelector(".btn.no").addEventListener("click",function(){
 		this.close();
 	}.bind(this),false);

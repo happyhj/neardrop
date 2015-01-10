@@ -8,12 +8,16 @@ function FileSaver() {
 inherits(FileSaver, EventEmitter);
 
 FileSaver.prototype.init = function() {
+	// 쳥크들을 임시저장할 장소
+	this.chunkBlock = [];
+	this.fileInfo;
+	this._fileEntry;
+	
 	var requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
 
+	// 1. 파일시스템 초기화 작업
 	requestFileSystem(window.TEMPORARY ,1, function(fs){
 		// 파일 시스템에 존재하는 파일을 모두 지우기
-		this._fileSystem = fs;
-		// 모든 파일을 삭제
 		var removeAllFiles = function(fs) {
 			fs.root.getDirectory('/', {}, function(dirEntry){
 				var dirReader = dirEntry.createReader();
@@ -49,6 +53,7 @@ FileSaver.prototype.initListeners = function() {
 // 파일을 지정해주는 것은 DataController의 작업
 FileSaver.prototype.setFile = function(fileInfo, chunkSize, blockSize) {
 	this.fileInfo = fileInfo;
+	this.fileInfo.sizeStr = getSizeExpression(this.fileInfo.size);
 
 	this.blockTranferContext = {
 		"chunkSize": chunkSize,
@@ -62,12 +67,42 @@ FileSaver.prototype.setFile = function(fileInfo, chunkSize, blockSize) {
 	};	
 
 	this._initBlockMap();
-
-	this.fileInfo.sizeStr = getSizeExpression(this.fileInfo.size);
-	// 저장을 위한 사전작업이 끝났으니 팝업창을 띄워 동의를 구한다.
-	// FileSaver -> DataController -> UIController가 이벤트를 받는다.		
-	this.emit('fileSavePrepared', this.fileInfo);
+	
+	// 저장할 준비
+	this.readyToWrite();
 };
+
+FileSaver.prototype.readyToWrite = function() {
+	// fileWriter를 만들어낸다. 
+	var requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
+
+	console.log("[FileSaver :init] requesting FileSystem");
+	requestFileSystem(window.TEMPORARY, this.fileInfo.size, function(fileName, fs){
+		console.log("[FileSaver :init] creating blank file in FileSystem");
+
+		fs.root.getFile(fileName, {create: true}, function(fileEntry){
+			this._fileEntry = fileEntry;
+			this._fileEntry.createWriter(function(fileWriter) {
+				this._fileWriter = fileWriter;
+				this._fileWriter.onwriteend = function() {
+					this.chunkBlock = [];
+					this.blockTranferContext.receivedBlockCount++;
+					// blockMap 업데이트하기
+					delete this.blockTranferContext.blockMap[""+this.blockTranferContext.blockIndex];	
+					//this.blockTranferContext.blockMap[""+this.blockTranferContext.blockIndex] = true;								
+					// 파일 쓰기가 종료되면 chunkSaved 이벤트를 trigger 한다.
+					console.log('Block saved!');		
+					this.emit('blockSaved', this.blockTranferContext.blockIndex);
+				}.bind(this);
+				
+				// 저장을 위한 사전작업이 끝났으니 팝업창을 띄워 동의를 구한다.
+				// FileSaver -> DataController -> UIController가 이벤트를 받는다.		
+				console.log("[FileSaver: event] fileSavePrepared triggered");
+				this.emit('fileSavePrepared', this.fileInfo);
+			}.bind(this));	
+		}.bind(this), this._errorHandler);	
+	}.bind(this, this.fileInfo.name), this._errorHandler);
+}
 
 FileSaver.prototype._initBlockMap = function() {
 	var blockMap = {}; // { "0" : true, "1": false, ...  }
@@ -84,3 +119,86 @@ FileSaver.prototype.getNextBlockIndexNeeded = function() {
 //		var index = Math.floor(Math.random() * blockKeys.length);
 	return blockKeys[0];
 };
+
+// MAIN. 
+FileSaver.prototype.saveChunk = function(chunk) {
+	var blockSize = this.blockTranferContext.blockSize,
+	receivedBlockCount = this.blockTranferContext.receivedBlockCount,
+	totalBlockCount = this.blockTranferContext.totalBlockCount,
+	totalChunkCount = this.blockTranferContext.totalChunkCount,
+	blockIndex = this.blockTranferContext.blockIndex,
+	chunkSize = this.blockTranferContext.chunkSize;
+	
+	// 데이터를 일단 주머니에 담고 
+	this.chunkBlock.push(chunk);
+	this.blockTranferContext.receivedChunkCount++;
+
+	// 한계치까지 담겼다면
+	var isLastChunkInBlock = (this.chunkBlock.length >= blockSize);
+	// 혹은 파일의 마지막 블록이라면
+	var isLastChunkInFile = false; 
+	// 지금까지 받은 블록의 수가 totalBlockCount - 1 과 같으며, 
+	// 총 chunk의 갯수 / blockSize 의 나머지가 this.chunkBlock.length 와 같으면 
+	if((receivedBlockCount === (totalBlockCount - 1))
+		&& ((totalChunkCount % blockSize) === this.chunkBlock.length)) {
+		isLastChunkInFile = true;
+	}
+
+	if (isLastChunkInBlock || isLastChunkInFile) {
+		var blob = new Blob(this.chunkBlock);
+		this._fileWriter.seek(blockIndex * blockSize * chunkSize);
+		this._fileWriter.write(blob);
+		// writeEnd시 blockSaved 이벤트 발생
+		return;
+	}
+
+	// 일반적인 상황에서는
+	//console.log('chunk stored!');	
+	console.log("!");	
+	this.emit('chunkStored');
+};
+
+FileSaver.prototype.downloadFile = function() {
+	if(this.blockTranferContext.receivedBlockCount === this.blockTranferContext.totalBlockCount) {
+		console.log("Downloading File...");
+		var link = document.createElement("a");
+		link.href = this._fileEntry.toURL();
+		link.download = this.fileInfo.name;
+		this._simulatedClick(link);
+		link.parentNode.removeChild(link);
+	} else {
+		console.log("File NOT Completed. You cannot download it yet.");		
+	}
+};
+
+FileSaver.prototype._simulatedClick = function(ele) {
+	var evt = document.createEvent("MouseEvent");
+	evt.initMouseEvent("click", true, true, null,0, 0, 0, 80, 20, false, false, false, false, 0, null);
+	ele.dispatchEvent(evt);
+};
+
+FileSaver.prototype._errorHandler = function(e) {
+	var msg = '';
+	switch (e.name) {
+	case FileError.QUOTA_EXCEEDED_ERR:
+	  msg = 'QUOTA_EXCEEDED_ERR';
+	  break;
+	case FileError.NOT_FOUND_ERR:
+	  msg = 'NOT_FOUND_ERR';
+	  break;
+	case FileError.SECURITY_ERR:
+	  msg = 'SECURITY_ERR';
+	  break;
+	case FileError.INVALID_MODIFICATION_ERR:
+	  msg = 'INVALID_MODIFICATION_ERR';
+	  break;
+	case FileError.INVALID_STATE_ERR:
+	  msg = 'INVALID_STATE_ERR';
+	  break;
+	default:
+	  msg = 'Unknown Error';
+	  break;
+	};
+	msg += '\n' + e.message;
+	console.log('Error: ' + msg);
+}

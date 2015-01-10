@@ -12,33 +12,6 @@
 		};
 	})();
 	
-	// EventEmitter
-	function _EventEmitter() {
-		this.events = [];
-	}
-	
-	_EventEmitter.prototype.on = function(fn) {
-		this.events.push(fn);
-	};
-	
-	_EventEmitter.prototype.off = function(fn) {
-		var newEvents = [];
-		// 입력받은 함수와 같은것만 빼고 유지. 
-		for (var i=0, len=this.events.length; i<len; ++i) {
-			if (this.events[i] !== fn) {
-				newEvents.push(this.events[i]);
-			}
-		}
-		this.events = newEvents;
-	};
-	
-	_EventEmitter.prototype.trigger = function() {
-		for (var i=0, len=this.events.length; i<len; ++i) {
-			this.events[i](arguments);
-		}
-	};
-	
-	
 	// helper functions
 	function randomMax(max) {
 		return Math.floor(Math.random() * max);
@@ -67,6 +40,9 @@
 	
 		
 	function StreamLoader(initParam) {
+		if (!(this instanceof StreamLoader)) return new StreamLoader(args);
+		EventEmitter.call(this);
+		
 		this.isUp = (initParam.direction === 'up')?true:false;
 		this.containerEl = initParam.containerEl;
 		this.verticalSpeed = 2.7;
@@ -79,13 +55,11 @@
 
 
 		this.particleSystem;
-	
-		this._eventEmitter = {
-			'loadEnd': new _EventEmitter()
-		};			
 		
 		this.init();
 	}
+	inherits(StreamLoader, EventEmitter);
+	
 	StreamLoader.prototype.on = function(evtName, fn) {
 		// eventEmitter key에 존재시 사용
 		if (this._eventEmitter[evtName]) {
