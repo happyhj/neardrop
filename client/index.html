@@ -12,53 +12,6 @@
 	</a>
 </div>
 
-<!-- Templates -->
-<script type="text/template" id="confirm-popup-template-sender">
-<div class="acception-container">
-	<p><%= opponentName %>에게
-	<%= fileName %>.<%= fileType %>(<%= fileSize %>Kb) 을(를) 전송하시겠습니까?</p>
-	<div class="btn no">아니오</div>
-	<div class="btn yes">예</div>
-</div>
-</script>
-
-<script type="text/template" id="confirm-popup-template-receiver">
-<div class="acception-container">
-	<p><%= opponentName %>으로부터
-	<%= fileName %>.<%= fileType %>(<%= fileSize %>Kb) 을(를) 받으시겠습니까?</p>
-	<div class="btn no">아니오</div>
-	<div class="btn yes">예</div>
-</div>
-</script>
-
-<script type="text/template" id="wave-template">
-<circle cx="<%= cx %>" cy="<%= cy %>" r="<%= r %>" stroke="<%= color %>" stroke-width="<%= width %>" stroke-opacity="<%= opacity %>" fill-opacity="0.0" />
-</script>
-
-<script type="text/template" id="avatar-template-me">
-<div class="avatar" id="<%= id %>">
-<h1><%= name %></h1>
-<span class="id blind"><%= id %></span>
-<div class="avatar-pic" style="background-image:url(./user_pic/<%= image %>)">
-</div>
-</div>
-</script>
-
-<script type="text/template" id="avatar-template-neighbor">
-<div class="avatar" id="<%= id %>">
-<div class="drop-mask"></div>
-<span class="id blind"><%= id %></span>
-<div class="progress-container">
-</div>
-<div class="avatar-pic" style="background-image:url(./user_pic/<%= image %>)">
-	<div class="message">
-	</div>
-</div>
-<h1><%= name %></h1>
-<div class="stream-loader-container"></div>
-</div>
-</script>
-
 <!-- addClass 와 removeClass 용 -->
 <script src="./lib/jquery-2.1.1.min.js"></script>
 <!-- 스프링 애니메이션 용-->
@@ -67,6 +20,7 @@
 <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
 <!-- peer 연결용 -->
 <script type="text/javascript" src="./lib/peer.js"></script>
+<script src="./script/EventEmitter.js"></script>
 <script src="./script/FileSender.js"></script>
 <script src="./script/FileSaver.js"></script>
 <script src="./script/ConnectionHandler.js"></script>
@@ -94,7 +48,6 @@ function getPosition(element) {
 </script>
 
 <script src="./script/Neighbor.js"></script>
-<script src="./script/EventEmitter.js"></script>
 <script src="./script/AirDrop.js"></script>
 <script src="./script/ConfirmPopup.js"></script>
 <script src="./script/App.js"></script>

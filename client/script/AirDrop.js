@@ -1,4 +1,6 @@
 function AirDrop(args) {
+	if (!(this instanceof AirDrop)) return new AirDrop(args);
+	EventEmitter.call(this);
 	// me
 	this.me = null;
 
@@ -23,10 +25,10 @@ function AirDrop(args) {
 	//	this.connectedPeers = {};
 
 	// eventEmitter
-	this.eventEmitter = {
-		'adduser': new EventEmitter(),
-		'removeuser': new EventEmitter()
-	};
+	// this.eventEmitter = {
+	// 	'adduser': new EventEmitter(),
+	// 	'removeuser': new EventEmitter()
+	// };
 
 	// 초기화
 	this.confirmPopup = new ConfirmPopup();
@@ -35,6 +37,7 @@ function AirDrop(args) {
 	// 종료시 호출 요청
 	window.onbeforeunload = this._destory.bind(this);
 }
+inherits(AirDrop, EventEmitter);
 
 AirDrop.prototype.initConnectionHandler = function() {
 
@@ -118,7 +121,6 @@ AirDrop.prototype.initConnectionHandler = function() {
 		this.connectionHandler.streamLoader = new StreamLoader(streamLoaderInitParam);
 		
 		this.connectionHandler.streamLoader.on("loadEnd", function() {
-//			alert("로드끝!");
 			this.connectionHandler.disconnect();
 			this.fileEntry = undefined;
 			this.connectionHandler.streamLoader = undefined;
@@ -268,10 +270,10 @@ AirDrop.prototype.initializeTransfer = function(targetEl, file) {
 
 	console.log("주고자 하는 상대방의 ID는 "+id);					
 	// 연결되지 않았던 peer의 경우
-//	if (id !== undefined && this.connectionHandlers[id] === undefined) {
-		// 
-		// file 이름을 가진 connection 생성, (remotePeer);
-		// 상대방과 커넥션을 맺고 
+	//	if (id !== undefined && this.connectionHandlers[id] === undefined) {
+	// 
+	// file 이름을 가진 connection 생성, (remotePeer);
+	// 상대방과 커넥션을 맺고 
 	console.log("이 상대와 연결을 시도합니다.");					
 
 		this.connectionHandler.connect(id, {
@@ -300,7 +302,7 @@ AirDrop.prototype.off = function(evtName, fn) {
 AirDrop.prototype._createMe = function(id) {
 	var me = new Neighbor(id, true);
 	this.me = me;
-	this.eventEmitter.adduser.trigger(me);
+	this.emit('adduser', me);
 };
 
 AirDrop.prototype._closeConnection = function(id) {
@@ -321,7 +323,7 @@ AirDrop.prototype._addUser = function(id) {
 	if (!nearByMe.hasOwnProperty(id)) {
 		nearByMe[id] = new Neighbor(id);
 		// avatar 추가
-		this.eventEmitter.adduser.trigger(nearByMe[id]);
+		this.emit('adduser', nearByMe[id]);
 	}
 };
 
@@ -331,7 +333,7 @@ AirDrop.prototype._removeUser = function(id) {
 	// 기존 존재하는 유저를 삭제한다.
 	if (nearByMe[id] !== undefined) {
 		// avatar 제거
-		this.eventEmitter.removeuser.trigger(nearByMe[id]);
+		this.emit('removeuser', nearByMe[id]);
 		delete nearByMe[id];
 	}
 };

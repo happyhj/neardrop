@@ -4,34 +4,13 @@
 
 	var FileSaver = window.FileSaver;
 	var FileSender = window.FileSender;
-	
-	// EventEmitter
-	function _EventEmitter() {
-		this.events = [];
-	}
-	
-	_EventEmitter.prototype.on = function(fn) {
-		this.events.push(fn);
-	};
-	
-	_EventEmitter.prototype.off = function(fn) {
-		var newEvents = [];
-		// 입력받은 함수와 같은것만 빼고 유지. 
-		for (var i=0, len=this.events.length; i<len; ++i) {
-			if (this.events[i] !== fn) {
-				newEvents.push(this.events[i]);
-			}
-		}
-		this.events = newEvents;
-	};
-	
-	_EventEmitter.prototype.trigger = function() {
-		for (var i=0, len=this.events.length; i<len; ++i) {
-			this.events[i](arguments);
-		}
-	};
 
 	function ConnectionHandler(initArgs) {
+		// EventEmitter 인스턴스 상속
+		if (!(this instanceof ConnectionHandler)) return new ConnectionHandler(initArgs);
+		EventEmitter.call(this);
+
+
 		this.CHUNK_SIZE = initArgs.CHUNK_SIZE;
 		this.BLOCK_SIZE = initArgs.BLOCK_SIZE;
 		
@@ -46,19 +25,24 @@
 		this.fileSender;
 			
 		this.peer = initArgs.userPeer;
-	
-		this._eventEmitter = {
-			'connect': new _EventEmitter(),
-			'disconnect': new _EventEmitter(),
-			'peerIDAcquire': new _EventEmitter(),
-			'filePrepared': new _EventEmitter(),
-			'transferStart': new _EventEmitter(),
-			'transferEnd': new _EventEmitter(),
-			'blockTransfered': new _EventEmitter()
-		};	
+
+		// this._eventEmitter = {
+		// 	'connect': new EventEmitter(),
+		// 	'disconnect': new EventEmitter(),
+		// 	'peerIDAcquire': new EventEmitter(),
+		// 	'filePrepared': new EventEmitter(),
+		// 	'transferStart': new EventEmitter(),
+		// 	'transferEnd': new EventEmitter(),
+		// 	'blockTransfered': new EventEmitter()
+		// };
+
+		// change like this
+		// this.on('connect', function(){});
 	
 		this.initPeerEventHandler();
 	}
+	// EventEmitter 프로토타입 상속
+	inherits(ConnectionHandler, EventEmitter);
 	
 	ConnectionHandler.prototype.getProgress = function() {
 		// 내가 수신측일 경우
@@ -85,27 +69,14 @@
 		}
 		//debugger;
 	};
-				
-	ConnectionHandler.prototype.on = function(evtName, fn) {
-		// eventEmitter key에 존재시 사용
-		if (this._eventEmitter[evtName]) {
-			this._eventEmitter[evtName].on(fn);	
-		}
-	};
-	
-	ConnectionHandler.prototype.off = function(evtName, fn) {
-		// eventEmitter key에 존재시 사용
-		if (this._eventEmitter[evtName]) {
-			this._eventEmitter[evtName].off(fn);	
-		}
-	};
 		
 	ConnectionHandler.prototype.initPeerEventHandler = function() {
 		// 내 연결 아이디를 발급 받았을 때
-		
-		this.peer.on('open', function(id){
-			this._eventEmitter.peerIDAcquire.trigger(id);
-		}.bind(this));
+		// actually do nothing
+		// this.peer.on('open', function(id){
+		// 	this.emit('peerIDAcquire', id);
+		// }.bind(this));
+
 		// 상대방과 연결을 수립했을 때
 		this.peer.on('connection', function(dataConnection) {
 			this.connection = dataConnection;
@@ -138,7 +109,7 @@
 					this.fileSender.initBlockContext(blockIndex);
 					// 보내는 쪽의 전송시작 이벤트 
 					if(blockIndex == 0) {
-						this._eventEmitter.transferStart.trigger();
+						this.emit('transferStart');
 						this.transferStart = Date.now();
 					}
 				break;
@@ -174,10 +145,10 @@
 	
 	ConnectionHandler.prototype.initConnectionHandler = function() {
 		this.connection.on('open', function(){
-			this._eventEmitter.connect.trigger(this.connection.peer);
+			this.emit('connect', this.connection.peer);
 		}.bind(this));	
 		this.connection.on('close', function(){
-			this._eventEmitter.disconnect.trigger(this.connection.peer);
+			this.emit('disconnect', this.connection.peer);
 		}.bind(this));		
 		this.connection.on('data', function(message){
 			this._handleMessage(message);
@@ -227,7 +198,7 @@
 		
 		var initializeCallback = function(){	
 			this.fileSaver.fileInfo.sizeStr = this._getSizeExpression(this.fileSaver.fileInfo.size);			
-			this._eventEmitter.filePrepared.trigger(this.fileSaver.fileInfo);
+			this.emit('filePrepared', this.fileSaver.fileInfo);
 		}.bind(this);
 		
 		this.fileSaver.on("initialized", initializeCallback);		
@@ -239,7 +210,7 @@
 			if(this.fileSaver.blockTranferContext.receivedBlockCount === this.fileSaver.blockTranferContext.totalBlockCount) {
 				this.transferEnd = Date.now();
 				console.log("쳥크 다바다따!!: "+this.transferEnd);
-				this._eventEmitter.transferEnd.trigger();
+				this.emit('transferEnd');
 				this.fileSaver.off("blockSaved", blockSavedCallback);	
 			}
 			// 다 안받았으면 다음 블록을 보내달라고 송신자에게 응답을 보낸다.
@@ -260,7 +231,7 @@
 
 
 		var blockSavedCallback = function(blockIndex){
-			this._eventEmitter.blockTransfered.trigger(blockIndex[0]);
+			this.emit('blockTransfered', blockIndex[0]);
 		}.bind(this);
 		
 		this.fileSaver.on("blockSaved", blockSavedCallback);
@@ -287,7 +258,7 @@
 		this.fileSender.on("blockContextInitialized", blockContextInitializedCallback);	
 		
 		var blockSentCallback = function(blockIndex){
-			this._eventEmitter.blockTransfered.trigger(blockIndex[0]);
+			this.emit('blockTransfered', blockIndex[0]);
 		}.bind(this);
 		this.fileSender.on("blockSent", blockSentCallback);
 						
@@ -317,9 +288,7 @@
 	};
 	
 	ConnectionHandler.prototype.makeConnection = function(peerId) {
-		this.connect(peerId,
-		{
-			reliable: false,
+		this.connect(peerId, {
 			serialization: "none"
 		});
 	};
@@ -333,9 +302,10 @@
 			});
 			// 받는 쪽의 전송시작 이벤트 
 			if(this.fileSaver.blockTranferContext.blockIndex == 0)
-				this._eventEmitter.transferStart.trigger();
+				this.emit('transferStart');
 		}
 	};
+
 	ConnectionHandler = ConnectionHandler;
 
 	// 글로벌 객체에 모듈을 프로퍼티로 등록한다.
