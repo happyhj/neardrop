@@ -1,9 +1,9 @@
 function App() {
-	this.init();	
+	this.init();
+	this.initListeners();	
 }
 
 App.prototype.init = function() {
-
 	// 가장 아랫단부터 생성
 	this.dataController = new DataController({
 		'CHUNK_SIZE': CHUNK_SIZE,  // 16000 byte per binary chunk
@@ -11,7 +11,9 @@ App.prototype.init = function() {
 	});
 	this.userController = new UserController({url: 'http://www.heej.net/2014/airdropbox/nearbyuser.php'});
 	this.uiController = new UIController();
+};
 
+App.prototype.initListeners = function() {
 	// 컨트롤러간에 정보가 오가는 경우 이 곳에서 처리한다
 	this.userController.on('peerCreated', function(peer) {
 		this.dataController.setPeer(peer);
@@ -77,7 +79,7 @@ App.prototype.init = function() {
 	this.dataController.on('transferEnd', function() {
 		this.uiController.transferEnd();
 	}.bind(this));
-};
+}
 
 // Utils
 var getSizeExpression = function(size) { // byte
