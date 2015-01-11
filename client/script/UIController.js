@@ -99,6 +99,7 @@ UIController.prototype.addAvatar = function(avatar, isMe) {
 	var containerEl = isMe ? userContainerEl : neighborContainerEl;
 	var template = (isMe ? this.avatarTemplateMe : this.avatarTemplateNeighbor)(avatar);
 	
+	console.log(avatar.id);
 	containerEl.insertAdjacentHTML('afterbegin', template);
 
 	if(!isMe) {
@@ -184,8 +185,8 @@ UIController.prototype.setProgressSource = function(progressSource) {
 UIController.prototype.showProgress =  function(peerId, dir) {
 	// 프로그래스 바를 만들기 
 	this.opponentDiv = document.getElementById(peerId);
-	var progressContainer = opponentDiv.querySelector(".progress-container");
-	var streamLoaderContainer = opponentDiv.querySelector(".stream-loader-container");
+	var progressContainer = this.opponentDiv.querySelector(".progress-container");
+	var streamLoaderContainer = this.opponentDiv.querySelector(".stream-loader-container");
 	
 	//  fileSaver 나 fileSender 의 blockcontext객체 레퍼런스를 가져온다.
 	this.loader = new PieLoader({

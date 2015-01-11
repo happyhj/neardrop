@@ -9,7 +9,7 @@ App.prototype.init = function() {
 		'CHUNK_SIZE': CHUNK_SIZE,  // 16000 byte per binary chunk
 		'BLOCK_SIZE': BLOCK_SIZE, // 64 binary chunks per one block
 	});
-	this.userController = new UserController({url: 'http://www.heej.net/2014/airdropbox/nearbyuser.php'});
+	this.userController = new UserController({url: 'http://fourwings.kr:8000/nearbyuser.php'});
 	this.uiController = new UIController();
 };
 
@@ -65,6 +65,10 @@ App.prototype.initListeners = function() {
 			yesCallback: yesCallback
 		});
 			
+	}.bind(this));
+	
+	this.dataController.on('fileSendPrepared', function(fileInfo) {
+		this.uiController.setFileInfo(fileInfo);
 	}.bind(this));
 
 	this.dataController.on('showProgress', function(peer, dir) {

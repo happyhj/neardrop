@@ -45,7 +45,17 @@ FileSaver.prototype.init = function() {
 };
 
 FileSaver.prototype.initListeners = function() {
-
+	this.on('blockSaved', function() {
+		if(this.blockTranferContext.receivedBlockCount === this.blockTranferContext.totalBlockCount) {
+			console.log("쳥크 다바다따!!: "+Date.now());
+			this.emit('transferEnd');
+			// this.off("blockSaved", blockSavedCallback);	
+		}
+		// 다 안받았으면 다음 블록을 보내달라고 송신자에게 응답을 보낸다.
+		else {
+			this.requestBlockTransfer();
+		} 
+	})
 
 };
 
@@ -158,13 +168,13 @@ FileSaver.prototype.saveChunk = function(chunk) {
 };
 
 FileSaver.prototype.downloadFile = function() {
+	if (!this._fileEntry) return;
 	if(this.blockTranferContext.receivedBlockCount === this.blockTranferContext.totalBlockCount) {
 		console.log("Downloading File...");
 		var link = document.createElement("a");
 		link.href = this._fileEntry.toURL();
 		link.download = this.fileInfo.name;
 		this._simulatedClick(link);
-		link.parentNode.removeChild(link);
 	} else {
 		console.log("File NOT Completed. You cannot download it yet.");		
 	}

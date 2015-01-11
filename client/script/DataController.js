@@ -40,9 +40,9 @@ DataController.prototype.connect = function(opponent, file) {
 	console.log(opponent.id +" 와 연결을 시도합니다.");					
 
 	this.fileEntry = file;
-	this.connection = this.peer.connect(peer_id, {
-		reliable: true,
-		serialization: "none"
+	this.connection = this.peer.connect(opponent.id, {
+		// reliable: false,
+		// serialization: "none"
 	});
 	this._setConnectionHandlers();
 };
@@ -81,7 +81,8 @@ DataController.prototype.initListeners = function() {
 	});
 
 	this.fileSender.on('fileSendPrepared', function(fileInfo) {
-		// Do nothing. wait for response.
+		// UI에서 다루도록 이벤트를 상위 계층으로 올린다.
+		this.emit('fileSendPrepared', fileInfo);
 	}.bind(this));
 
 	this.fileSaver.on('fileSavePrepared', function(fileInfo) {
@@ -89,14 +90,30 @@ DataController.prototype.initListeners = function() {
 		this.emit('fileSavePrepared', fileInfo);
 	}.bind(this));	
 
+	this.fileSender.on("blockContextInitialized", function() {
+		this.fileSender.sendDataChunk(this.connection);
+	}.bind(this));	
+
+	this.fileSaver.on('chunkStored', function() {
+		this.connection.send({
+			"kind": "requestChunk"
+		});
+	}.bind(this));
+
 	this.fileSender.on("blockSent", function() {
 		this.emit('updateProgress', this.getProgress());
+	}.bind(this));
+
+	this.fileSaver.on('transferEnd', function() {
+		this.fileSaver.downloadFile();
+		this.disconnect();
+		this.fileEntry = null;
+		this.emit('transferEnd');
 	}.bind(this));
 
 	this.fileSender.on('transferEnd', function() {
 		this.disconnect();
 		this.fileEntry = null;
-
 		this.emit('transferEnd');
 	}.bind(this));
 };
@@ -136,6 +153,10 @@ DataController.prototype._handleMessage = function(message) {
 				this.fileSender.sendDataChunk(this.connection);
 				break;
 			default:
+				debugger;
+				console.log("what a fuck...");
+				console.log(typeof message);
+				console.log(message);
 				break;
 		};
 	}
@@ -143,7 +164,7 @@ DataController.prototype._handleMessage = function(message) {
 
 DataController.prototype.askOpponent = function(file) {
 	console.log("메타 정보 보내기");
-	this.connection.send({
+	var message = {
 		  "kind": "fileInfo"
 		, "fileInfo": {
 			"lastModifiedDate": file.lastModifiedDate,
@@ -153,7 +174,8 @@ DataController.prototype.askOpponent = function(file) {
 		}
 		, "chunkSize": this.CHUNK_SIZE
 		, "blockSize": this.BLOCK_SIZE
-	});
+	};
+	this.connection.send(message);
 };
 
 // 수락 메시지 전송. "이제 블록을 보내라"
@@ -179,6 +201,8 @@ DataController.prototype.getProgress = function() {
 	if (!context) {
 		return undefined;
 	}
-	var progress = context.sentChunkCount / context.totalChunkCount;
+	var chunkCount = context.sentChunkCount || context.receivedChunkCount;
+	if (!chunkCount) chunkCount = 0;
+	var progress = chunkCount / context.totalChunkCount;
 	return progress;
 };

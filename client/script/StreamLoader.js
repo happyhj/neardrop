@@ -59,20 +59,7 @@
 		this.init();
 	}
 	inherits(StreamLoader, EventEmitter);
-	
-	StreamLoader.prototype.on = function(evtName, fn) {
-		// eventEmitter key에 존재시 사용
-		if (this._eventEmitter[evtName]) {
-			this._eventEmitter[evtName].on(fn);	
-		}
-	};
-	
-	StreamLoader.prototype.off = function(evtName, fn) {
-		// eventEmitter key에 존재시 사용
-		if (this._eventEmitter[evtName]) {
-			this._eventEmitter[evtName].off(fn);	
-		}
-	};
+
 	
 	StreamLoader.prototype.updateSize = function () {
 		this.canvas.width = this.containerEl.offsetWidth;
@@ -195,7 +182,7 @@
 		if(this.streamLoader.isFinishing === true && this.particles.length === 0) {
 			console.log("cancelAnimationFrame : of streamLoader");
 			cancelAnimationFrame(this.streamLoader.requestAnimFrameLoop);
-			this.streamLoader._eventEmitter.loadEnd.trigger();
+			this.streamLoader.emit('loadEnd');
 		}		
 
 		for (var i = 0; i < this.particles.length; i++) {			
@@ -213,3 +200,4 @@
 	}    	
 
 }(this));	
+

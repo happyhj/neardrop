@@ -147,12 +147,18 @@ UserController.prototype._requestHandler = function(users) {
 
 	// 응답으로 받아온 유저 아이디 리스트
 	var idList = [];
+	var neighborIdList = [];
+
 	for(var i in users) {
 		idList.push(users[i].id);
 	}
+	for(var key in neighbors) {
+		neighborIdList.push(key);
+	}
+
 	// 유저 삭제 & 유지 처리 : 응답에 존재하지 않으면 상대목록 모델에서 삭제
 	for(var id in neighbors) {
-		if(!_.contains(idList, neighbors[id]))
+		if(!_.contains(idList, id))
 			this._removeUser(id);
 	}
 
@@ -164,11 +170,12 @@ UserController.prototype._requestHandler = function(users) {
 			return;
 		}
 		// neighbors에 요청받은 id가 존재하지 않는 경우 추가
-		if (!_.contains(neighbors, id)) {
+		if (!_.contains(neighborIdList, id)) {
 			this._addUser(id);
 		}
-	}.bind(this));	
+	}.bind(this));
 };
+
 
 UserController.prototype._addUser = function(id) {
 	var neighbors = this.neighbors;

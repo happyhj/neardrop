@@ -52,7 +52,7 @@ FileSender.prototype.initBlockContext = function(blockIndex) {
 	var startByte = blockIndex * blockSize * chunkSize;
 	var endByte =  (blockIndex+1) * blockSize * chunkSize;
 
-	var block = this._sliceBlob(this._file, startByte, endByte);
+	var block = this._sliceBlob(this.file, startByte, endByte);
 	
 	// 덩어리째로 쓰지말고 미리 arrayBuffer들로 나눠서 준비해 두자.
 	this.chunks = [];
@@ -101,11 +101,9 @@ FileSender.prototype.sendDataChunk = function(conn) {
 	if(this.blockTranferContext.blockSize <= chunkIndex) {
 		return; 
 	}
-
 	var chunkToSend = this.chunks[chunkIndex];
-
 	if(conn && conn.open===true) {
-		conn.send(chunk);
+		conn.send(chunkToSend);
 		this.blockTranferContext.chunkIndexToSend++;
 		this.blockTranferContext.sentChunkCount++;
 
