@@ -80,11 +80,11 @@ DataController.prototype.initListeners = function() {
 		console.log(peerId + " 과 연결이 끊어졌습니다.");
 	});
 
+	// 파일 전송 준비가 끝났을 때
 	this.fileSender.on('fileSendPrepared', function(fileInfo) {
 		// UI에서 다루도록 이벤트를 상위 계층으로 올린다.
 		this.emit('fileSendPrepared', fileInfo);
 	}.bind(this));
-
 	this.fileSaver.on('fileSavePrepared', function(fileInfo) {
 		// UI에서 다루도록 이벤트를 상위 계층으로 올린다.
 		this.emit('fileSavePrepared', fileInfo);
@@ -100,17 +100,21 @@ DataController.prototype.initListeners = function() {
 		});
 	}.bind(this));
 
+	// 블록이 보내졌을 때와 받았을 때
 	this.fileSender.on("blockSent", function() {
 		this.emit('updateProgress', this.getProgress());
 	}.bind(this));
+	this.fileSaver.on('nextBlock', function(blockIdx) {
+		this.requestBlockTransfer(blockIdx);
+		this.emit('updateProgress', this.getProgress());
+	}.bind(this));
 
+	// 전송이 끝났을 때
 	this.fileSaver.on('transferEnd', function() {
-		this.fileSaver.downloadFile();
 		this.disconnect();
 		this.fileEntry = null;
 		this.emit('transferEnd');
 	}.bind(this));
-
 	this.fileSender.on('transferEnd', function() {
 		this.disconnect();
 		this.fileEntry = null;
@@ -178,21 +182,24 @@ DataController.prototype.askOpponent = function(file) {
 	this.connection.send(message);
 };
 
-// 수락 메시지 전송. "이제 블록을 보내라"
-DataController.prototype.requestBlockTransfer = function() {
-	if(this.connection && this.connection.open===true) {	
-		this.fileSaver.blockTranferContext.blockIndex = this.fileSaver.getNextBlockIndexNeeded();
-		// 수락 메시지 전송
-		this.connection.send({
-			"kind": "requestBlock",
-			"blockIndex": this.fileSaver.blockTranferContext.blockIndex
-		});
-		
-		// 만약 첫 요청이었다면 프로그레스 바 생성
-		if(this.fileSaver.blockTranferContext.blockIndex == 0)
-			// 어떤 상대방과 연결되었는지를 UI에 이때 전달
-			this.emit('showProgress', this.connection.peer, 'down');
+// "이제 블록을 보내라"
+DataController.prototype.requestBlockTransfer = function(blockIdx) {
+	// 첫 수락시엔 App에서 인자 없이 실행하므로
+	if (!blockIdx) {
+		blockIdx = 0;
 	}
+	// 현재 받는 블록이 몇 번 블록인지 저장
+	this.fileSaver.blockTranferContext.blockIndex = blockIdx;
+
+	this.connection.send({
+		"kind": "requestBlock",
+		"blockIndex": blockIdx
+	});
+	
+	// 만약 첫 요청이었다면 프로그레스 바 생성
+	if(blockIdx == 0)
+		// 어떤 상대방과 연결되었는지를 UI에 이때 전달
+		this.emit('showProgress', this.connection.peer, 'down');
 };
 
 DataController.prototype.getProgress = function() {

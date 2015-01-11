@@ -49,11 +49,13 @@ FileSaver.prototype.initListeners = function() {
 		if(this.blockTranferContext.receivedBlockCount === this.blockTranferContext.totalBlockCount) {
 			console.log("쳥크 다바다따!!: "+Date.now());
 			this.emit('transferEnd');
+			this.downloadFile();
 			// this.off("blockSaved", blockSavedCallback);	
 		}
 		// 다 안받았으면 다음 블록을 보내달라고 송신자에게 응답을 보낸다.
 		else {
-			this.requestBlockTransfer();
+			var blockIndex = this.getNextBlockIndexNeeded();
+			this.emit('nextBlock', blockIndex);
 		} 
 	})
 

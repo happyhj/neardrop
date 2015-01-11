@@ -165,8 +165,8 @@ UIController.prototype.setStreamLoaderContainer = function() {
 		streamLoaderContainer.setAttribute("style", "-webkit-transform: rotate("+(theta*160/Math.PI)+"deg);height:"+slide+"px;");
 		
 		// Container의 크기 변화에 맞춰 내부 Canvas 크기 변경하기
-		// if(this.airdrop.connectionHandler.streamLoader)
-		// 	this.airdrop.connectionHandler.streamLoader.updateSize();
+		if(this.streamLoader)
+			this.streamLoader.updateSize();
 			
 	}.bind(this);
 
