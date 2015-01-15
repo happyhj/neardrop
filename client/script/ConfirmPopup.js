@@ -1,14 +1,15 @@
 function ConfirmPopup() {
-	this.template;
-	this.containerEl;
-	this.yesCallback;
-	this.spring;
+	this.template = null;
+	this.containerEl = null;
+	this.yesCallback = null;
+	this.spring = null;
 }
 
 ConfirmPopup.prototype.open = function(param) {
 	var container = document.querySelector(".acception-container");
-	if(container)
+	if(container) {
 		document.body.removeChild(container);
+	}
 	
 	this.template = param.template;
 	var partialHTML = this.template(param);

@@ -8,9 +8,9 @@ inherits(UIController, EventEmitter);
 
 UIController.prototype.init = function() {
 	this.confirmPopup = new ConfirmPopup();
-	this.pie;
-	this.stream;
-	this.opponentDiv;
+	this.pie = null;
+	this.stream = null;
+	this.opponentDiv = null;
 
 	// 템플릿을 외부 파일로부터 로딩
 	this.loadTemplates();

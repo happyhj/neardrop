@@ -8,11 +8,11 @@ function FileSender(args) {
 inherits(FileSender, EventEmitter);
 
 FileSender.prototype.init = function() { 
-	this.file; // 사용자가 지정항 파일의 엔트리다.
-	this.fileInfo; // name, size, type
+	this.file = null; // 사용자가 지정항 파일의 엔트리다.
+	this.fileInfo = null; // name, size, type
 	this.fileReader = new FileReader();
 
-	this.blockTranferContext;
+	this.blockTranferContext = {};
 	this.chunks = [];
 };
 

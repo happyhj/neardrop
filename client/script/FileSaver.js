@@ -10,15 +10,15 @@ inherits(FileSaver, EventEmitter);
 FileSaver.prototype.init = function() {
 	// 쳥크들을 임시저장할 장소
 	this.chunkBlock = [];
-	this.fileInfo;
-	this._fileEntry;
+	this.fileInfo = null;
+	this.file = null;
 	
 	var requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
 
-	// 1. 파일시스템 초기화 작업
+	// 파일시스템 초기화 작업
 	requestFileSystem(window.TEMPORARY ,1, function(fs){
 		// 파일 시스템에 존재하는 파일을 모두 지우기
-		var removeAllFiles = function(fs) {
+		(function removeAllFiles(fs) {
 			fs.root.getDirectory('/', {}, function(dirEntry){
 				var dirReader = dirEntry.createReader();
 				dirReader.readEntries(function(entries) {
@@ -36,9 +36,8 @@ FileSaver.prototype.init = function() {
 					}
 				}.bind(this), this._errorHandler);
 			}.bind(this), this._errorHandler);
-		}.bind(this);
-		
-		removeAllFiles(fs);
+		}.bind(this))();
+
 		// fileSaver 인스턴스가 준비되면 DataController가 파일을 지정해주게 된다
 		this.emit('instancePrepared');
 	}.bind(this), this._errorHandler);
@@ -64,15 +63,15 @@ FileSaver.prototype.initListeners = function() {
 // 파일을 지정해주는 것은 DataController의 작업
 FileSaver.prototype.setFile = function(fileInfo, chunkSize, blockSize) {
 	this.fileInfo = fileInfo;
-	this.fileInfo.sizeStr = getSizeExpression(this.fileInfo.size);
+	this.fileInfo.sizeStr = getSizeExpression(fileInfo.size);
 
 	this.blockTranferContext = {
 		"chunkSize": chunkSize,
 		"blockSize": blockSize,
 		"receivedBlockCount": 0,
 		"receivedChunkCount": 0,
-		"totalBlockCount": Math.ceil(this.fileInfo.size / (chunkSize * blockSize)),
-		"totalChunkCount": Math.ceil(this.fileInfo.size / (chunkSize)),
+		"totalBlockCount": Math.ceil(fileInfo.size / (chunkSize * blockSize)),
+		"totalChunkCount": Math.ceil(fileInfo.size / (chunkSize)),
 		"blockMap": undefined, // init시 생성
 		"blockIndex": undefined // 현재 받고 있는 블록의 인덱스
 	};	
@@ -92,8 +91,8 @@ FileSaver.prototype.readyToWrite = function() {
 		console.log("[FileSaver :init] creating blank file in FileSystem");
 
 		fs.root.getFile(fileName, {create: true}, function(fileEntry){
-			this._fileEntry = fileEntry;
-			this._fileEntry.createWriter(function(fileWriter) {
+			this.file = fileEntry;
+			this.file.createWriter(function(fileWriter) {
 				this._fileWriter = fileWriter;
 				this._fileWriter.onwriteend = function() {
 					this.chunkBlock = [];
@@ -134,8 +133,6 @@ FileSaver.prototype.getNextBlockIndexNeeded = function() {
 // MAIN. 
 FileSaver.prototype.saveChunk = function(chunk) {
 	var blockSize = this.blockTranferContext.blockSize,
-	receivedBlockCount = this.blockTranferContext.receivedBlockCount,
-	totalBlockCount = this.blockTranferContext.totalBlockCount,
 	totalChunkCount = this.blockTranferContext.totalChunkCount,
 	blockIndex = this.blockTranferContext.blockIndex,
 	chunkSize = this.blockTranferContext.chunkSize;
@@ -147,13 +144,7 @@ FileSaver.prototype.saveChunk = function(chunk) {
 	// 한계치까지 담겼다면
 	var isLastChunkInBlock = (this.chunkBlock.length >= blockSize);
 	// 혹은 파일의 마지막 블록이라면
-	var isLastChunkInFile = false; 
-	// 지금까지 받은 블록의 수가 totalBlockCount - 1 과 같으며, 
-	// 총 chunk의 갯수 / blockSize 의 나머지가 this.chunkBlock.length 와 같으면 
-	if((receivedBlockCount === (totalBlockCount - 1))
-		&& ((totalChunkCount % blockSize) === this.chunkBlock.length)) {
-		isLastChunkInFile = true;
-	}
+	var isLastChunkInFile = this.isLastChunkInFile(); 
 
 	if (isLastChunkInBlock || isLastChunkInFile) {
 		var blob = new Blob(this.chunkBlock);
@@ -164,17 +155,29 @@ FileSaver.prototype.saveChunk = function(chunk) {
 	}
 
 	// 일반적인 상황에서는
-	//console.log('chunk stored!');	
 	console.log("!");	
 	this.emit('chunkStored');
 };
 
+FileSaver.prototype.isLastChunkInFile = function() {
+	var blockSize = this.blockTranferContext.blockSize,
+	receivedBlockCount = this.blockTranferContext.receivedBlockCount,
+	totalBlockCount = this.blockTranferContext.totalBlockCount
+	// 지금까지 받은 블록의 수가 totalBlockCount - 1 과 같으며, 
+	// 총 chunk의 갯수 / blockSize 의 나머지가 this.chunkBlock.length 와 같으면 
+	if((receivedBlockCount === (totalBlockCount - 1))
+		&& ((totalChunkCount % blockSize) === this.chunkBlock.length)) {
+		return true;
+	}
+	return false;
+}
+
 FileSaver.prototype.downloadFile = function() {
-	if (!this._fileEntry) return;
+	if (!this.file) return;
 	if(this.blockTranferContext.receivedBlockCount === this.blockTranferContext.totalBlockCount) {
 		console.log("Downloading File...");
 		var link = document.createElement("a");
-		link.href = this._fileEntry.toURL();
+		link.href = this.file.toURL();
 		link.download = this.fileInfo.name;
 		this._simulatedClick(link);
 	} else {

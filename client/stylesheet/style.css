@@ -33,7 +33,7 @@ body, html {
 ,.neighbor-container > .avatar > span
 ,.user-container > .avatar > h1
 ,.user-container > .avatar > span  {
-	margin: 0;	
+	margin: 0px;	
 }
 
 .neighbor-container {
@@ -44,7 +44,7 @@ body, html {
 }
 .user-container {
 	position: fixed;
-	bottom: 0;
+	bottom: 0px;
 	width: 100%;
 	text-align: center;
 
@@ -74,13 +74,11 @@ body, html {
    ========================================================================== */
 html {
 	background-image: url(http://www.ijailbreak.com/wp-content/uploads/2014/06/ipad-ios8-wallpaper-1024x1024.png);
-	1background-image: url(./image/snowforest.jpg);
 	background-size: cover;
-	1background-image: url(./image/tweed.png);
 }
 body {
 background: -moz-radial-gradient(center, ellipse cover,  rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.7) 100%); /* FF3.6+ */
-background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,rgba(0,0,0,0.1)), color-stop(100%,rgba(0,0,0,0.7))); /* Chrome,Safari4+ */
+background: -webkit-gradient(radial, center center, 0, center center, 100%, color-stop(0%,rgba(0,0,0,0.1)), color-stop(100%,rgba(0,0,0,0.7))); /* Chrome,Safari4+ */
 background: -webkit-radial-gradient(center, ellipse cover,  rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.7) 100%); /* Chrome10+,Safari5.1+ */
 background: -o-radial-gradient(center, ellipse cover,  rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.7) 100%); /* Opera 12+ */
 background: -ms-radial-gradient(center, ellipse cover,  rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.7) 100%); /* IE10+ */
@@ -114,9 +112,9 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00000000', e
 	background-size: cover;
 	border-radius: 50px;
 	
-	-webkit-box-shadow: 0px 3px 2px 0px rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.20);
-	-moz-box-shadow:    0px 3px 2px 0px rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.20);
-	box-shadow:         0px 3px 2px 0px rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.20);
+	-webkit-box-shadow: 0 3px 2px 0 rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0 rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0 rgba(255, 255, 255, 0.20);
+	-moz-box-shadow:    0 3px 2px 0 rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0 rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0 rgba(255, 255, 255, 0.20);
+	box-shadow:         0 3px 2px 0 rgba(40, 40, 40, 0.85),inset 1px 2px 2px 0 rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0 rgba(255, 255, 255, 0.20);
 	
 	overflow: hidden;
 }
@@ -141,9 +139,9 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00000000', e
 	transition: .3s -webkit-box-shadow linear;
 }
 .in-process .progress-container {
-	-webkit-box-shadow: 0px 3px 2px 0px rgba(40, 40, 40, 0.75),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.25);
-	-moz-box-shadow:    0px 3px 2px 0px rgba(40, 40, 40, 0.75),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.25);
-	box-shadow:         0px 3px 2px 0px rgba(40, 40, 40, 0.75),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.25);
+	-webkit-box-shadow: 0 3px 2px 0 rgba(40, 40, 40, 0.75),inset 1px 2px 2px 0 rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0 rgba(255, 255, 255, 0.25);
+	-moz-box-shadow:    0 3px 2px 0 rgba(40, 40, 40, 0.75),inset 1px 2px 2px 0 rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0 rgba(255, 255, 255, 0.25);
+	box-shadow:         0 3px 2px 0 rgba(40, 40, 40, 0.75),inset 1px 2px 2px 0 rgba(255, 255, 255, 0.25),inset -2px -2px 2px 0 rgba(255, 255, 255, 0.25);
 }
 .in-process .avatar-pic {
 	-webkit-box-shadow: none;
@@ -159,9 +157,9 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00000000', e
 	border-radius: 8px;
 }
 .avatar.dragover > .avatar-pic {
-	-webkit-box-shadow: 0px 3px 2px 0px rgba(40, 40, 40, 0.25),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.15),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.15);
-	-moz-box-shadow:    0px 3px 2px 0px rgba(40, 40, 40, 0.25),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.15),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.15);
-	box-shadow:         0px 3px 2px 0px rgba(40, 40, 40, 0.25),inset 1px 2px 2px 0px rgba(255, 255, 255, 0.15),inset -2px -2px 2px 0px rgba(255, 255, 255, 0.15);
+	-webkit-box-shadow: 0 3px 2px 0 rgba(40, 40, 40, 0.25),inset 1px 2px 2px 0 rgba(255, 255, 255, 0.15),inset -2px -2px 2px 0 rgba(255, 255, 255, 0.15);
+	-moz-box-shadow:    0 3px 2px 0 rgba(40, 40, 40, 0.25),inset 1px 2px 2px 0 rgba(255, 255, 255, 0.15),inset -2px -2px 2px 0 rgba(255, 255, 255, 0.15);
+	box-shadow:         0 3px 2px 0 rgba(40, 40, 40, 0.25),inset 1px 2px 2px 0 rgba(255, 255, 255, 0.15),inset -2px -2px 2px 0 rgba(255, 255, 255, 0.15);
 }
 
 .avatar.dragover > h1 {
@@ -179,7 +177,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00000000', e
 
 .stream-loader-container {
 	position: absolute;
-	top: 0;
+	top: 0px;
 	left: 50%;
 	margin-left: -60px;
 	margin-top: 75px;
@@ -187,7 +185,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00000000', e
 	width: 120px;
 	height: 500px;
 
-    transform-origin: 50% 0%;
+    transform-origin: 50% 0;
    	z-index: -200;
 }
 .message {
@@ -195,7 +193,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00000000', e
 	height: 100%;
 	font-size: 28px;
 	line-height: 100px;
-	text-shadow: 0px 0px 26px rgba(0, 0, 0, 1);
+	text-shadow: 0 0 26px rgba(0, 0, 0, 1);
 	
 	transition: .3s all linear;
 }
@@ -261,8 +259,8 @@ canvas {
 	background-size: cover;
 	width: 40px;
 	height: 40px;
-	bottom: 0;
-	left: 0;
+	bottom: 0px;
+	left: 0px;
 	margin: 15px;
 	opacity: .8;
 }
