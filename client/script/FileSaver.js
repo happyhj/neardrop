@@ -31,7 +31,7 @@ FileSaver.prototype.init = function() {
 						if (entry.isFile){
 						    entry.remove(function() {
 						    	console.log('File removed - '+ entry.fullPath);
-						    }, this._errorHandler);
+							}, this._errorHandler);
 						}
 					}
 				}.bind(this), this._errorHandler);
@@ -133,7 +133,6 @@ FileSaver.prototype.getNextBlockIndexNeeded = function() {
 // MAIN. 
 FileSaver.prototype.saveChunk = function(chunk) {
 	var blockSize = this.blockTranferContext.blockSize,
-	totalChunkCount = this.blockTranferContext.totalChunkCount,
 	blockIndex = this.blockTranferContext.blockIndex,
 	chunkSize = this.blockTranferContext.chunkSize;
 	
@@ -162,7 +161,9 @@ FileSaver.prototype.saveChunk = function(chunk) {
 FileSaver.prototype.isLastChunkInFile = function() {
 	var blockSize = this.blockTranferContext.blockSize,
 	receivedBlockCount = this.blockTranferContext.receivedBlockCount,
-	totalBlockCount = this.blockTranferContext.totalBlockCount
+	totalBlockCount = this.blockTranferContext.totalBlockCount,
+	totalChunkCount = this.blockTranferContext.totalChunkCount
+	
 	// 지금까지 받은 블록의 수가 totalBlockCount - 1 과 같으며, 
 	// 총 chunk의 갯수 / blockSize 의 나머지가 this.chunkBlock.length 와 같으면 
 	if((receivedBlockCount === (totalBlockCount - 1))

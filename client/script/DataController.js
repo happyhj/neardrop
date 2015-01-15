@@ -66,7 +66,7 @@ DataController.prototype._setConnectionHandlers = function() {
 DataController.prototype.initListeners = function() {
 	// Connection 연결 수립 이후 대기 상태가 되면
 	this.on('ready', function(args) {
-		var peerId = args[0];
+		// var peerId = args[0];
 		if(this.fileEntry !== null) {
 			// 수신자에게 파일 정보를 전달
 			this.askOpponent(this.fileEntry);
@@ -145,7 +145,7 @@ DataController.prototype._handleMessage = function(message) {
 				// 블록을 메모리에 로딩 및 청킹
 				this.fileSender.initBlockContext(blockIndex);
 				// 만약 첫 요청이었다면
-				if(blockIndex == 0) {
+				if(blockIndex === 0) {
 					// 어떤 상대방과 연결되었는지 정보를 UI에 이때 전달
 					this.emit('showProgress', this.connection.peer, 'up');
 					// 속도 계산용 기록
@@ -197,7 +197,7 @@ DataController.prototype.requestBlockTransfer = function(blockIdx) {
 	});
 	
 	// 만약 첫 요청이었다면 프로그레스 바 생성
-	if(blockIdx == 0)
+	if(blockIdx === 0)
 		// 어떤 상대방과 연결되었는지를 UI에 이때 전달
 		this.emit('showProgress', this.connection.peer, 'down');
 };

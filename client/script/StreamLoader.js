@@ -30,8 +30,7 @@
 		angleSpeed = 0.015,
 		particleSize = 1.4,
 		widthFactor = 20,
-		singlecolor = true,
-		defaultColor = 'rgba(250, 237, 29,.5)';
+		singlecolor = true;
 		// '#faed1d';
 	
 		
