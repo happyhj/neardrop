@@ -105,7 +105,7 @@ UserController.prototype._sendRequest = function(coords) {
 		},
 		dataType: 'json',
 		success: function (data) {
-			var users = JSON.parse(data);
+			var users = data;
 			// 왜인지 몰라도 핸들러없이 콜백이 설정될 때가 있으므로 있을때만 요청결과 처리하도록 한다.
 
 			// handler를 조금 더 깔끔하게 처리할 수 있을 것 같음
