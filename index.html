@@ -1,63 +1,44 @@
-<meta charset="utf-8"/>
-<link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:300,400,700' rel='stylesheet' type='text/css' />
-<link rel="stylesheet" type="text/css" href="./stylesheet/style.css">
-<style id="confirmCentralize"></style>
-<div class="wave">
-	<svg></svg>	
-</div>
-<div class="neighbor-container"></div>
-<div class="user-container"></div>
+<head>
+    <meta charset="utf-8"/>
+    <link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:300,400,700' rel='stylesheet' type='text/css' />
+    <link rel="stylesheet" type="text/css" href="./stylesheet/style.css">
+</head>
+<body>
+    <style id="confirmCentralize"></style>
+    
+    <div class="wave"><svg></svg></div>
+    <div class="neighbor-container"></div>
+    <div class="user-container"></div>
+    <div class="github-container">
+    	<a href="https://github.com/cocagolau/Project_AirDropBox" target="_blank"></a>
+    </div>
 
-<div class="github-container">
-	<a href="https://github.com/cocagolau/Project_AirDropBox" target="_blank">
-	</a>
-</div>
+    <!-- Script Libraries -->
+    <script src="./lib/jquery-2.1.1.min.js"></script>
+    <script src="./lib/rebound.min.js"></script> 
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
+    
+    <!-- peer.js or PlayRTC -->
+    <!-- <script type="text/javascript" src="./lib/peer.js"></script> -->
+    <script src="./lib/peer_eventemitter.js"></script>
+    <script src="./lib/playrtc.js"></script>
+    <script src="./lib/peer_wrapper_for_playrtc.js"></script>
 
-<!-- addClass 와 removeClass 용 -->
-<script src="./lib/jquery-2.1.1.min.js"></script>
-<!-- 스프링 애니메이션 용-->
-<script src="./lib/rebound.min.js"></script> 
-<!-- template 과 contanins 용-->
-<script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
-<!-- peer 연결용 -->
-<!--
-<script type="text/javascript" src="./lib/peer.js"></script>
--->
-<script type="text/javascript" src="./lib/playrtc.js"></script>
-<script type="text/javascript" src="./lib/peer_wrapper_for_playrtc.js"></script>
+    <!-- Core Scripts -->
+    <script src="./script/Utility.js"></script>
+    <script src="./script/FileSender.js"></script>
+    <script src="./script/FileSaver.js"></script>
+    <script src="./script/DataController.js"></script>
+    <script src="./script/PieLoader.js"></script>
+    <script src="./script/StreamLoader.js"></script>
+    <script src="./script/ConfirmPopup.js"></script>
+    <script src="./script/UIController.js"></script>
+    <script src="./script/Neighbor.js"></script>
+    <script src="./script/UserController.js"></script>
+    <script src="./script/App.js"></script>
 
-<script>
-// Global Variables
-var CHUNK_SIZE = 160000;
-var BLOCK_SIZE = 8;
-
-// Utility Functions
-function getPosition(element) {
-    var xPosition = 0;
-    var yPosition = 0;
-  
-    while(element) {
-        xPosition += (element.offsetLeft - element.scrollLeft + element.clientLeft);
-        yPosition += (element.offsetTop - element.scrollTop + element.clientTop);
-        element = element.offsetParent;
-    }
-    return { x: xPosition, y: yPosition };
-};
-</script>
-<script src="./script/EventEmitter.js"></script>
-<script src="./script/FileSender.js"></script>
-<script src="./script/FileSaver.js"></script>
-<script src="./script/DataController.js"></script>
-<script src="./script/PieLoader.js"></script>
-<script src="./script/StreamLoader.js"></script>
-<script src="./script/ConfirmPopup.js"></script>
-<script src="./script/UIController.js"></script>
-<script src="./script/Neighbor.js"></script>
-<script src="./script/UserController.js"></script>
-<script src="./script/App.js"></script>
-
-<script>
-// 현재는 내 아이디가 자동생성이지만 
-// 인자로 내 아이디를 넘기면서 APP을 생성해야 한다.
-var app = new App();
-</script>
+    <!-- Runnging Script -->
+    <script>
+        var app = new App();
+    </script>
+</body>

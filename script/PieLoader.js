@@ -138,8 +138,6 @@
 	
 	PieLoader.prototype._update = function () {	
 		// this.sourceObject 를 통해 this.theta 를 업데이트하는 함수이다.
-		console.log(this.progressAdapter);
-		console.log(this.sourceObject);
 		var progress = this.progressAdapter(this.sourceObject);
 		this.theta = progress * 360;
 	};

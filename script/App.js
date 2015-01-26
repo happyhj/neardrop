@@ -1,3 +1,7 @@
+// Global Variables
+var CHUNK_SIZE = 160000;
+var BLOCK_SIZE = 8;
+
 function App() {
 	this.init();
 	this.initListeners();	
@@ -40,38 +44,19 @@ App.prototype.initListeners = function() {
 			*/
 			console.log("띠로리");
 		}.bind(this);
-		/*
-		// ???
-		this.uiController.confirmPopup.open({
-			template: this.uiController.confirmTemplateSender,
-			opponentName: opponent.name,
-			fileName: file.name,
-			fileSize: Math.floor(file.size/1024),
-			fileType: file.type,
-			yesCallback: yesCallback
-		});
-*/
 
 		var fileNameTokens = file.name.split(".");
-		var fileExtension = fileNameTokens[fileNameTokens.length-1];
-		fileNameTokens.pop();
-
-		var sizeByKB = (file.size/1024).toFixed(1);
-		var sizeStr;
-		if(sizeByKB > 1024 && sizeByKB < 1024*1024) {
-			sizeStr = (sizeByKB/1024).toFixed(1)+"MB";
-		} else {
-			sizeStr = sizeByKB+"KB";
-		}
+		var fileExtension = fileNameTokens.pop();
+		var fileName = fileNameTokens.join(".");
 				
 		this.uiController.confirmPopup.open({
 			template: this.uiController.confirmTemplateSender,
 			opponentName: opponent.name,
 			opponentPicture: opponent.image,
-			fileName: fileNameTokens.join("."),
-			fileSize: sizeStr,
-			fileType: file.type,
+			fileName: fileName,
 			fileExtension: fileExtension,
+			fileType: file.type,
+			fileSize: getSizeExpression(file.size),
 			yesCallback: yesCallback,
 			noCallback: noCallback
 		});
@@ -99,25 +84,17 @@ App.prototype.initListeners = function() {
 		}.bind(this);
 		
 		var fileNameTokens = file.name.split(".");
-		var fileExtension = fileNameTokens[fileNameTokens.length-1];
-		fileNameTokens.pop();
-
-		var sizeByKB = (file.size/1024).toFixed(1);
-		var sizeStr;
-		if(sizeByKB > 1024 && sizeByKB < 1024*1024) {
-			sizeStr = (sizeByKB/1024).toFixed(1)+"MB";
-		} else {
-			sizeStr = sizeByKB+"KB";
-		}
+		var fileExtension = fileNameTokens.pop();
+		var fileName = fileNameTokens.join(".");
 				
 		this.uiController.confirmPopup.open({
-			template: this.uiController.confirmTemplateReciever,
+			template: this.uiController.confirmTemplateSender,
 			opponentName: opponent.name,
 			opponentPicture: opponent.image,
-			fileName: fileNameTokens.join("."),
-			fileSize: sizeStr,
-			fileType: file.type,
+			fileName: fileName,
 			fileExtension: fileExtension,
+			fileType: file.type,
+			fileSize: getSizeExpression(file.size),
 			yesCallback: yesCallback,
 			noCallback: noCallback
 		});
@@ -140,49 +117,4 @@ App.prototype.initListeners = function() {
 	this.dataController.on('transferEnd', function() {
 		this.uiController.transferEnd();
 	}.bind(this));
-}
-
-// Utils
-var getSizeExpression = function(size) { // byte
-	var result = size;
-	if(result < 1024) {
-		return result + "Byte";
-	}
-	result = Math.floor(result / 1024.0 * 10)/10;
-	if(result < 1024) {
-		return result + "KB";
-	}
-	result = Math.floor(result / 1024.0 * 10)/10;
-	if(result < 1024) {
-		return result + "MB";
-	}
-	result = Math.floor(result / 1024.0 * 10)/10;
-	if(result < 1024) {
-		return result + "GB";
-	}
-	// 이후엔 단위가 없으므로 10,000 TB 라고라도 적어주어야 함
-	result = Math.floor(result / 1024.0 * 10)/10;
-	return result + "TB";
-};
-
-var secondsToString = function(seconds) {
-	var expression = "";
-	if(seconds < 60) {
-		expression = seconds + "s";
-	} else if (seconds < 3600) {
-		if(seconds%60 > 0)
-			expression = Math.floor(seconds/60) + "m " + seconds%60 + "s";
-		else 
-			expression = Math.floor(seconds/60) + "m";
-	} else if (seconds < (3600*24)) {
-		if(seconds%3600 > 0)
-			expression = Math.floor(seconds/3600) + "h "+ Math.floor((seconds%3600)/60) + "m";
-		else
-			expression = Math.floor(seconds/3600) + "h";
-	} else if (seconds < (3600*24)*7) {
-		expression = Math.floor(seconds/(3600*24)) + "d";
-	} else {
-		expression = "∞";
-	}
-	return expression;
 }

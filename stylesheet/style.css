@@ -87,7 +87,7 @@ body, html {
    3. Images - Mainly backgound-images
    ========================================================================== */
 html {
-	background-image: url(http://www.ijailbreak.com/wp-content/uploads/2014/06/ipad-ios8-wallpaper-1024x1024.png);
+	background-image: url(../image/bg.jpg);
 	background-size: cover;
 }
 body {
