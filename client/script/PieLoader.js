@@ -1,6 +1,5 @@
 (function(window) {
 	'use strict';
-	var console = window.console;
     var vendors = ['ms', 'moz', 'webkit', 'o'];
     for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
         window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
@@ -21,16 +20,16 @@
 		this.sourceObject = args.sourceObject;
 		this.progressAdapter = args.progressAdapter;
 		
-		this.containerWidth;
-		this.containerHeight;	
+		this.containerWidth = 0;
+		this.containerHeight = 0;	
 		
-		this.loader;
+		this.loader = null;
 		this.theta = 0; 
 		this.pi = Math.PI; 
 		this.t = 30;
-		this.radius;	
+		this.radius = 0;	
 		
-		this.loopFunctionCache;
+		this.loopFunctionCache = null;
 		
 		this.loaderTemplate = _.template(loaderTemplateString);
 		
@@ -58,8 +57,6 @@
 	
 		this.container.setAttribute('style', 'overflow: hidden');
 		this.locateLoader();
-
-
 	};
 	
 	PieLoader.prototype.locateLoader = function () {
@@ -144,8 +141,6 @@
 		var progress = this.progressAdapter(this.sourceObject);
 		this.theta = progress * 360;
 	};
-	
-	PieLoader = PieLoader;
 
 	// 글로벌 객체에 모듈을 프로퍼티로 등록한다.
 	if (typeof module !== 'undefined' && module.exports) {

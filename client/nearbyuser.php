@@ -1,6 +1,6 @@
 <?php
 // Create connection
-$con = mysqli_connect("localhost","airdrop","airdrop!!@@##$$","airdropbox");
+$con = mysqli_connect("localhost","neardrop","neardrop!!@@##$$","neardrop");
 
 // Check connection
 if (mysqli_connect_errno()) {

@@ -12,33 +12,6 @@
 		};
 	})();
 	
-	// EventEmitter
-	function _EventEmitter() {
-		this.events = [];
-	}
-	
-	_EventEmitter.prototype.on = function(fn) {
-		this.events.push(fn);
-	};
-	
-	_EventEmitter.prototype.off = function(fn) {
-		var newEvents = [];
-		// 입력받은 함수와 같은것만 빼고 유지. 
-		for (var i=0, len=this.events.length; i<len; ++i) {
-			if (this.events[i] !== fn) {
-				newEvents.push(this.events[i]);
-			}
-		}
-		this.events = newEvents;
-	};
-	
-	_EventEmitter.prototype.trigger = function() {
-		for (var i=0, len=this.events.length; i<len; ++i) {
-			this.events[i](arguments);
-		}
-	};
-	
-	
 	// helper functions
 	function randomMax(max) {
 		return Math.floor(Math.random() * max);
@@ -51,54 +24,37 @@
 	
 		return 'rgba(' + r + ',' + g + ',' + b +  ','+Math.random()*.8+')';
 	}
-	function refreshColor() {
-		for (var i = 0; i < particleSystem.particles.length; i++) {
-			particleSystem.particles[i].color = singlecolor ? defaultColor : getParticleColor();
-		}
-	}
+
 	// globals
 	var numParticles = 300,
 		angleSpeed = 0.015,
 		particleSize = 1.4,
 		widthFactor = 20,
-		singlecolor = true,
-		defaultColor = 'rgba(250, 237, 29,.5)';
+		singlecolor = true;
 		// '#faed1d';
 	
 		
 	function StreamLoader(initParam) {
+		if (!(this instanceof StreamLoader)) return new StreamLoader(args);
+		EventEmitter.call(this);
+		
 		this.isUp = (initParam.direction === 'up')?true:false;
 		this.containerEl = initParam.containerEl;
 		this.verticalSpeed = 2.7;
 
 		// 컨테이너
-		this.canvas;
-		this.ctx;			
+		this.canvas = null;
+		this.ctx = null;
 		
 		numParticles = (this.containerEl.offsetHeight / 600) * 250;
 
 
-		this.particleSystem;
-	
-		this._eventEmitter = {
-			'loadEnd': new _EventEmitter()
-		};			
+		this.particleSystem = null;
 		
 		this.init();
 	}
-	StreamLoader.prototype.on = function(evtName, fn) {
-		// eventEmitter key에 존재시 사용
-		if (this._eventEmitter[evtName]) {
-			this._eventEmitter[evtName].on(fn);	
-		}
-	};
-	
-	StreamLoader.prototype.off = function(evtName, fn) {
-		// eventEmitter key에 존재시 사용
-		if (this._eventEmitter[evtName]) {
-			this._eventEmitter[evtName].off(fn);	
-		}
-	};
+	inherits(StreamLoader, EventEmitter);
+
 	
 	StreamLoader.prototype.updateSize = function () {
 		this.canvas.width = this.containerEl.offsetWidth;
@@ -122,7 +78,7 @@
 			verticalSpeed: this.verticalSpeed
 		});
 	
-		this.requestAnimFrameLoop;
+		this.requestAnimFrameLoop = null;
 		this.animloop = function() {
 			this.requestAnimFrameLoop = requestAnimFrame(this.animloop);
 			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -195,42 +151,36 @@
 				}));	
 		}
 		
-		for (var i = 0; i < this.particles.length; i++) {			
-			this.particles[i].update();			
+		if(this.streamLoader.isFinishing === true) {
+			this.fadeOut();
 		}
 
-		for (var i = 0; i < this.particles.length; i++) {			
-			if(this.streamLoader.isFinishing === true) {
-				if (this.particles[i].h < 0 || this.particles[i].h > this.particles[i].canvas.height ) {
-					// 해당 파티클을 삭제
-					var index = this.particles.indexOf(this.particles[i]);
-					if(index != -1) {
-						this.particles.splice(index, 1);
-					}
-				}
-				
-				if(Math.random() > .98 && this.streamLoader.isFinishing === true) {
-					var index = this.particles.indexOf(this.particles[i]);
-					if(index != -1) {
-						this.particles.splice(index, 1);
-					};
-				}
-			}
+		for (var i = 0; i < this.particles.length; i++) {
+			var particle = this.particles[i];
+			particle.update();
+			particle.draw();
 		}
 
 		if(this.streamLoader.isFinishing === true && this.particles.length === 0) {
 			console.log("cancelAnimationFrame : of streamLoader");
 			cancelAnimationFrame(this.streamLoader.requestAnimFrameLoop);
-			this.streamLoader._eventEmitter.loadEnd.trigger();
-		}		
-
-		for (var i = 0; i < this.particles.length; i++) {			
-			this.particles[i].draw();			
+			this.streamLoader.emit('loadEnd');
 		}
-
 	};
 	
-	StreamLoader = StreamLoader;
+	ParticleSystem.prototype.fadeOut = function() {
+		for (var i = 0; i < this.particles.length; i++) {
+			var particle = this.particles[i];
+			if (particle.h < 0 || particle.h > this.canvas.height ) {
+				// 해당 파티클을 삭제
+				this.particles.splice(i, 1);
+				continue;
+			}
+			if (Math.random() > .98) {
+				this.particles.splice(i, 1);
+			}
+		}
+	};
 
 	if (typeof module !== 'undefined' && module.exports) {
 		module.exports = StreamLoader;
@@ -239,3 +189,4 @@
 	}    	
 
 }(this));	
+
