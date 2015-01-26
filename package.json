@@ -1,0 +1,29 @@
+{
+  "name": "NearDrop",
+  "version": "0.1.0",
+  "description": "",
+  "main": "startup.js",
+  "dependencies": {
+    "hogan-express": "^0.5.2",
+    "promise": "^6.1.0",
+    "express": "^4.11.1",
+    "request": "^2.51.0",
+    "jade": "^1.9.1",
+    "sqlite3": "^3.0.4",
+    "supervisor": "^0.6.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/happyhj/neardrop.git"
+  },
+  "author": "Kim Hee Jae",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/happyhj/neardrop/issues"
+  },
+  "homepage": "https://github.com/happyhj/neardrop"
+}
