@@ -1,8 +1,8 @@
 Project_AirDropBox
 ==================
 ## HOW TO BUILD
-npm install
-node startup.js
+* npm install
+* node startup.js
 
 
 ** 최신 크롬 브라우저만 지원합니다 **
