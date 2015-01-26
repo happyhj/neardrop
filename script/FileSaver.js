@@ -12,6 +12,8 @@ FileSaver.prototype.init = function() {
 	this.chunkBlock = [];
 	this.fileInfo = null;
 	this.file = null;
+
+	this.blockTranferContext = {};
 	
 	var requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
 
@@ -74,7 +76,7 @@ FileSaver.prototype.setFile = function(fileInfo, chunkSize, blockSize) {
 		"totalChunkCount": Math.ceil(fileInfo.size / (chunkSize)),
 		"blockMap": undefined, // init시 생성
 		"blockIndex": undefined // 현재 받고 있는 블록의 인덱스
-	};	
+	};
 
 	this._initBlockMap();
 	

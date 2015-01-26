@@ -11,6 +11,8 @@ function DataController(args) {
 inherits(DataController, EventEmitter);
 
 DataController.prototype.init = function() {
+	this.status = AIRDROP.STATUS.IDEAL;
+
 	this.peer = null;
 	this.connection = null;
 
@@ -31,12 +33,7 @@ DataController.prototype.setPeer = function(peer) {
 	}.bind(this));
 };
 
-DataController.prototype.connect = function(opponent, file) {		
-	// 연결되지 않았던 peer의 경우
-	//	if (id !== undefined && this.connectionHandlers[id] === undefined) {
-	// 
-	// file 이름을 가진 connection 생성, (remotePeer);
-	// 상대방과 커넥션을 맺고 
+DataController.prototype.connect = function(opponent, file) {
 	console.log(opponent.id +" 와 연결을 시도합니다.");					
 
 	this.fileEntry = file;
@@ -47,8 +44,18 @@ DataController.prototype.connect = function(opponent, file) {
 	this._setConnectionHandlers();
 };
 
+DataController.prototype.sendRefusal = function() {
+	if(this.connection && this.connection.open===true) {
+		this.connection.send({
+			"kind": "refusal"
+		});
+		this.disconnect();
+	}
+};
+
 DataController.prototype.disconnect = function() {
-	//this.peer.disconnect();
+	this.peer.disconnect();
+	this.fileEntry = undefined;
 };
 
 DataController.prototype._setConnectionHandlers = function() {
@@ -130,6 +137,9 @@ DataController.prototype._handleMessage = function(message) {
 	else { // JSON이 도착한 것 
 		var kind = message.kind; // chunk, meta, request
 		switch (kind) {
+			case "refusal": // 수신자가 보낸 거부 메시지. 다시 받을 수 있는 상태로 바뀐다.
+				this.getRefused();
+				break;
 			case "fileInfo": // 송신자가 보낸 파일 정보가 도착했다. 이를 가지고 file saver 를 초기화한다.
 				console.log("[Connection : _handleMessage] incoming message file info");
 				var fileInfo = message.fileInfo;
@@ -164,6 +174,11 @@ DataController.prototype._handleMessage = function(message) {
 				break;
 		};
 	}
+};
+
+DataController.prototype.getRefused = function() {
+	// TODO: 거절되었다는 메시지를 띄워준다
+	this.status = AIRDROP.STATUS.IDEAL;
 };
 
 DataController.prototype.askOpponent = function(file) {
@@ -203,7 +218,10 @@ DataController.prototype.requestBlockTransfer = function(blockIdx) {
 };
 
 DataController.prototype.getProgress = function() {
-	var context = this.fileSender.blockTranferContext || this.fileSaver.blockTranferContext;
+	var context = this.fileSender.blockTranferContext
+	if (_.isEmpty(context)) {
+		context = this.fileSaver.blockTranferContext;
+	}
 	// 둘 다 잡히지 않을 경우
 	if (!context) {
 		return undefined;

@@ -67,21 +67,12 @@ ConfirmPopup.prototype.setSpring = function(springHandler){
 	this.spring = spring;
 }
 
-
 ConfirmPopup.prototype.close = function() {
 	if(this.containerEl) {
 		this.containerEl.setAttribute("class", "acception-container closing");
 		this.containerEl.addEventListener( 'webkitTransitionEnd', function( event ) { 
 			document.body.removeChild(this.containerEl); 
 			document.getElementById("confirmCentralize").innerHTML = "";
-			
-			// TODO: 초기 상태로 되돌리기
-			/* 
-			app.airdrop.connectionHandler.disconnect();
-			app.airdrop.fileEntry = undefined;
-			app.airdrop.status = AIRDROP.STATUS.IDEAL;
-			*/
 		}.bind(this), false );	
 	}
-
 };

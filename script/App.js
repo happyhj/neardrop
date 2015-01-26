@@ -38,11 +38,7 @@ App.prototype.initListeners = function() {
 		}.bind(this);
 
 		var noCallback = function(){ // NO 를 눌렀을 경우 실행하는 함수.
-			/*
-			connectionHandler.transferStart = Date.now();
-			connectionHandler.sendRefusal();				
-			*/
-			console.log("띠로리");
+			this.dataController.sendRefusal();
 		}.bind(this);
 
 		var fileNameTokens = file.name.split(".");
@@ -76,11 +72,7 @@ App.prototype.initListeners = function() {
 		}.bind(this);
 		
 		var noCallback = function(){ // NO 를 눌렀을 경우 실행하는 함수.
-			/*
-			connectionHandler.transferStart = Date.now();
-			connectionHandler.sendRefusal();				
-			*/
-			console.log("띠로리");
+			this.dataController.sendRefusal();
 		}.bind(this);
 		
 		var fileNameTokens = file.name.split(".");
@@ -88,7 +80,7 @@ App.prototype.initListeners = function() {
 		var fileName = fileNameTokens.join(".");
 				
 		this.uiController.confirmPopup.open({
-			template: this.uiController.confirmTemplateSender,
+			template: this.uiController.confirmTemplateReceiver,
 			opponentName: opponent.name,
 			opponentPicture: opponent.image,
 			fileName: fileName,
