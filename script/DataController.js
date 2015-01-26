@@ -11,8 +11,6 @@ function DataController(args) {
 inherits(DataController, EventEmitter);
 
 DataController.prototype.init = function() {
-	this.status = AIRDROP.STATUS.IDEAL;
-
 	this.peer = null;
 	this.connection = null;
 
@@ -178,7 +176,6 @@ DataController.prototype._handleMessage = function(message) {
 
 DataController.prototype.getRefused = function() {
 	// TODO: 거절되었다는 메시지를 띄워준다
-	this.status = AIRDROP.STATUS.IDEAL;
 };
 
 DataController.prototype.askOpponent = function(file) {
