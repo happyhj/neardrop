@@ -20,10 +20,11 @@ DataController.prototype.init = function() {
 		this.unlisten();
 	}.bind(this);
 	this.refuseCallback = function(dataConnection) {
-		dataConnection.send({
-			"kind": "refusal"
-		});
-		dataConnection.close();
+		dataConnection.on('open', function(conn) {
+			conn.send({
+				"kind": "refusal"
+			});
+		}.bind(this, dataConnection));
 	}.bind(this);
 
 	this.fileEntry = null;
@@ -74,7 +75,6 @@ DataController.prototype.sendRefusal = function() {
 		this.connection.send({
 			"kind": "refusal"
 		});
-		this.disconnect();
 	}
 };
 
