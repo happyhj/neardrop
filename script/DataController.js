@@ -53,6 +53,7 @@ DataController.prototype.sendRefusal = function() {
 
 DataController.prototype.disconnect = function() {
 	this.peer.disconnect();
+	//this.connection.close();
 	this.fileEntry = undefined;
 };
 

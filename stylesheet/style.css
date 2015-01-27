@@ -27,6 +27,8 @@ body, html {
 	user-select: none;
 	
 	min-height: 400px;
+	
+	overflow: hidden;
 }
 
 .neighbor-container > .avatar > h1

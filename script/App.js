@@ -8,12 +8,12 @@ function App() {
 }
 
 App.prototype.init = function() {
-	// 가장 아랫단부터 생성
 	this.dataController = new DataController({
 		'CHUNK_SIZE': CHUNK_SIZE,  // 16000 byte per binary chunk
 		'BLOCK_SIZE': BLOCK_SIZE, // 64 binary chunks per one block
 	});
 	this.userController = new UserController({url: 'http://neardrop.heej.net/nearbyuser.php'});
+		
 	this.uiController = new UIController();
 };
 
@@ -58,7 +58,7 @@ App.prototype.initListeners = function() {
 		});
 			
 	}.bind(this));
-	
+
 	this.dataController.on('fileSavePrepared', function(file) {
 		// 내가 받는 측이므로 수신수락에 대한 질문을 한다.
 		var opponentId = this.dataController.connection.peer;
@@ -78,7 +78,7 @@ App.prototype.initListeners = function() {
 		var fileNameTokens = file.name.split(".");
 		var fileExtension = fileNameTokens.pop();
 		var fileName = fileNameTokens.join(".");
-				
+
 		this.uiController.confirmPopup.open({
 			template: this.uiController.confirmTemplateReceiver,
 			opponentName: opponent.name,

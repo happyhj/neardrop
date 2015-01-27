@@ -1,8 +1,14 @@
 function UIController(args) {
+	console.log("UIController 인스턴스 만들기");
+
+	
 	if (!(this instanceof UIController)) return new UIController(args);
 	EventEmitter.call(this);
 
 	this.init();
+	
+	console.log("UIController 인스턴스 만들기 끝");
+	console.log(this);
 }
 inherits(UIController, EventEmitter);
 
@@ -22,6 +28,8 @@ UIController.prototype.init = function() {
 };
 
 UIController.prototype.loadTemplates = function() {
+	console.log("UIController init: loadTemplates");
+
 	$.get('./templates/avatar-me.html', function (data) {
 		this.avatarTemplateMe = _.template(data);
 	}.bind(this), 'html');
@@ -32,9 +40,15 @@ UIController.prototype.loadTemplates = function() {
 		this.confirmTemplateSender = _.template(data);
 	}.bind(this), 'html');
 	$.get('./templates/confirm-popup-receiver.html', function (data) {
-		this.confirmTemplateReciever = _.template(data);
+		console.log("UIController init: loadTemplates - confirm-popup-receiver.html - 끝");
+
+		this.confirmTemplateReceiver = _.template(data);
+		
+		console.log(this);
 	}.bind(this), 'html');
 
+	console.log("UIController init: loadTemplates - 끝");
+	
 	// TEST용
 	// this.avatarTemplateMe = _.template(document.getElementById("avatar-me-template").innerHTML);
 	// this.avatarTemplateNeighbor = _.template(document.getElementById("avatar-neighbor-template").innerHTML);
