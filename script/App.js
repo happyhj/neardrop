@@ -107,6 +107,17 @@ App.prototype.initListeners = function() {
 	}.bind(this));
 
 	this.dataController.on('transferEnd', function() {
+/*
+		console.log("트랜스퍼가 끝났으므로 : 초기화");
+		this.dataController.initTools();
+		this.dataController.initListeners();
+*/	
 		this.uiController.transferEnd();
+		
+//		this.dataController.fileSender.blockTranferContext = null;
+//		this.dataController.fileSaver.blockTranferContext = null;
+
+//		this.dataController.initTools();
+//		this.dataController.initListenersOnFileDelegate();
 	}.bind(this));
 }

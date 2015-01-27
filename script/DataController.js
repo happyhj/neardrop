@@ -6,7 +6,6 @@ function DataController(args) {
 	this.BLOCK_SIZE = args.BLOCK_SIZE;
 
 	this.init();
-	this.initListeners();
 }
 inherits(DataController, EventEmitter);
 
@@ -27,13 +26,18 @@ DataController.prototype.init = function() {
 		}.bind(this, dataConnection));
 	}.bind(this);
 
-	this.fileEntry = null;
-	this.fileSaver = new FileSaver();
-	this.fileSender = new FileSender();
+	this.initTools();
+	this.initListeners();
+};
 
+DataController.prototype.initTools = function() {
+	this.fileEntry = null;
+	this.fileSaver = null;
+	this.fileSender = null;
+	
 	this.transferStart = null;
 	this.transferEnd = null;
-};
+}
 
 DataController.prototype.setPeer = function(peer) {
 	this.peer = peer;
@@ -81,7 +85,7 @@ DataController.prototype.sendRefusal = function() {
 DataController.prototype.disconnect = function() {
 	this.connection.close();
 	// 연결 종료 후 새로운 연결을 위해 파일 정보를 초기화한다
-	this.fileEntry = undefined;
+	this.fileEntry = null;
 };
 
 DataController.prototype._setConnectionHandlers = function() {
@@ -96,37 +100,40 @@ DataController.prototype._setConnectionHandlers = function() {
 	}.bind(this));
 }
 
-DataController.prototype.initListeners = function() {
-	// Connection 연결 수립 이후 대기 상태가 되면
-	this.on('ready', function(args) {
-		// var peerId = args[0];
-		if(this.fileEntry !== null) {
-			// 수신자에게 파일 정보를 전달
-			this.askOpponent(this.fileEntry);
-			// 전송자는 파일 전달 준비
-			this.fileSender.setFile(this.fileEntry, this.CHUNK_SIZE, this.BLOCK_SIZE);
-		}
-	}.bind(this));
-	
-	this.on('disconnected', function(args) {
-		var peerId = args[0];
-		console.log(peerId + " 과 연결이 끊어졌습니다.");
-		// 연결이 끊어졌으니 새로운 연결을 기다림
-		this.listen();
-	});
-
+DataController.prototype.initListenersOfFileSender = function() {
 	// 파일 전송 준비가 끝났을 때
 	this.fileSender.on('fileSendPrepared', function(fileInfo) {
 		// UI에서 다루도록 이벤트를 상위 계층으로 올린다.
 		this.emit('fileSendPrepared', fileInfo);
 	}.bind(this));
-	this.fileSaver.on('fileSavePrepared', function(fileInfo) {
-		// UI에서 다루도록 이벤트를 상위 계층으로 올린다.
-		this.emit('fileSavePrepared', fileInfo);
-	}.bind(this));	
 
 	this.fileSender.on("blockContextInitialized", function() {
 		this.fileSender.sendDataChunk(this.connection);
+	}.bind(this));	
+	
+	this.fileSender.on("blockSent", function() {
+		this.emit('updateProgress', this.getProgress());
+	}.bind(this));
+	
+	this.fileSender.on('transferEnd', function() {
+		// this.disconnect();
+		console.log("fileEnd");
+		this.connection.send({
+			"kind": "fileEnd"
+		});
+		this.emit('transferEnd');
+		this.fileEntry = null;
+		this.fileSender = null;
+//		this.fileSender.blockTranferContext.sentChunkCount = null;
+//		this.fileSender.blockTranferContext.totalChunkCount = undefined;	
+	}.bind(this));
+};
+
+DataController.prototype.initListenersOfFileSaver = function() {
+
+	this.fileSaver.on('fileSavePrepared', function(fileInfo) {
+		// UI에서 다루도록 이벤트를 상위 계층으로 올린다.
+		this.emit('fileSavePrepared', fileInfo);
 	}.bind(this));	
 
 	this.fileSaver.on('chunkStored', function() {
@@ -136,9 +143,7 @@ DataController.prototype.initListeners = function() {
 	}.bind(this));
 
 	// 블록이 보내졌을 때와 받았을 때
-	this.fileSender.on("blockSent", function() {
-		this.emit('updateProgress', this.getProgress());
-	}.bind(this));
+
 	this.fileSaver.on('nextBlock', function(blockIdx) {
 		this.requestBlockTransfer(blockIdx);
 		this.emit('updateProgress', this.getProgress());
@@ -151,18 +156,32 @@ DataController.prototype.initListeners = function() {
 		this.connection.send({
 			"kind": "thanks"
 		})
-		this.fileEntry = null;
 		this.emit('transferEnd');
-	}.bind(this));
-	this.fileSender.on('transferEnd', function() {
-		// this.disconnect();
-		console.log("fileEnd");
-		this.connection.send({
-			"kind": "fileEnd"
-		})
 		this.fileEntry = null;
-		this.emit('transferEnd');
+		this.fileSaver = null;
 	}.bind(this));
+
+}
+DataController.prototype.initListeners = function() {
+	// Connection 연결 수립 이후 대기 상태가 되면
+	this.on('ready', function(args) {
+		// var peerId = args[0];
+		if(this.fileEntry !== null) {
+			// 수신자에게 파일 정보를 전달
+			this.askOpponent(this.fileEntry);
+			// 전송자는 파일 전달 준비
+			this.fileSender = new FileSender();
+			this.initListenersOfFileSender();
+			this.fileSender.setFile(this.fileEntry, this.CHUNK_SIZE, this.BLOCK_SIZE);
+		}
+	}.bind(this));
+	
+	this.on('disconnected', function(args) {
+		var peerId = args[0];
+		console.log(peerId + " 과 연결이 끊어졌습니다.");
+		// 연결이 끊어졌으니 새로운 연결을 기다림
+		this.listen();
+	});
 };
 
 DataController.prototype._handleMessage = function(message) {
@@ -181,6 +200,8 @@ DataController.prototype._handleMessage = function(message) {
 				var fileInfo = message.fileInfo;
 				var chunkSize = message.chunkSize;
 				var blockSize = message.blockSize;
+				this.fileSaver = new FileSaver();
+				this.initListenersOfFileSaver();
 				this.fileSaver.setFile(fileInfo, chunkSize, blockSize);
 				break;
 			case "requestBlock":  // 수신자가 보낸 요청 블록 정보가 도착했다. 이를 통해 현재 블록전송 콘텍스트를 초기화 한다.
@@ -268,16 +289,14 @@ DataController.prototype.sendThanks = function() {
 };
 
 DataController.prototype.getProgress = function() {
-	var context = this.fileSender.blockTranferContext
-	if (_.isEmpty(context)) {
-		context = this.fileSaver.blockTranferContext;
-	}
-	// 둘 다 잡히지 않을 경우
+	var context = (this.fileSaver) ? this.fileSaver.blockTranferContext : this.fileSender.blockTranferContext;
+
 	if (!context) {
 		return undefined;
 	}
 	var chunkCount = context.sentChunkCount || context.receivedChunkCount;
 	if (!chunkCount) chunkCount = 0;
+
 	var progress = chunkCount / context.totalChunkCount;
 	return progress;
 };

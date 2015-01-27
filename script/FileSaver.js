@@ -49,8 +49,8 @@ FileSaver.prototype.initListeners = function() {
 	this.on('blockSaved', function() {
 		if(this.blockTranferContext.receivedBlockCount === this.blockTranferContext.totalBlockCount) {
 			console.log("쳥크 다바다따!!: "+Date.now());
-			this.emit('transferEnd');
 			this.downloadFile();
+			this.emit('transferEnd');
 			// this.off("blockSaved", blockSavedCallback);	
 		}
 		// 다 안받았으면 다음 블록을 보내달라고 송신자에게 응답을 보낸다.
@@ -153,9 +153,7 @@ FileSaver.prototype.saveChunk = function(chunk) {
 		// writeEnd시 blockSaved 이벤트 발생
 		return;
 	}
-
 	// 일반적인 상황에서는
-	console.log("!");	
 	this.emit('chunkStored');
 };
 

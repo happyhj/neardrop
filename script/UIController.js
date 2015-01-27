@@ -197,7 +197,8 @@ UIController.prototype.showProgress =  function(peerId, dir) {
 	var streamLoaderContainer = this.opponentDiv.querySelector(".stream-loader-container");
 	
 	//  fileSaver 나 fileSender 의 blockcontext객체 레퍼런스를 가져온다.
-	this.loader = new PieLoader({
+	this.pie = new PieLoader({
+//	this.loader = new PieLoader({
 		container: progressContainer
 		, color: 'rgba(255,255,255,.97)'
 		, fill: false
@@ -206,8 +207,9 @@ UIController.prototype.showProgress =  function(peerId, dir) {
 			return source.getProgress();
 		}
 	});
+	this.pie.startAnimation();
 	
-	this.loader.startAnimation();
+//	this.loader.startAnimation();
 	
 	var streamLoaderInitParam = {
 		containerEl: streamLoaderContainer,
@@ -217,7 +219,7 @@ UIController.prototype.showProgress =  function(peerId, dir) {
 	this.streamLoader = new StreamLoader(streamLoaderInitParam);
 	
 	this.streamLoader.on("loadEnd", function() {
-		this.streamLoader = undefined;
+		this.streamLoader = null;
 	}.bind(this));
 	
 	var container = this.opponentDiv;
@@ -264,6 +266,12 @@ UIController.prototype.transferEnd = function() {
 	var container = this.opponentDiv;
 	container.querySelector(".avatar-pic>.message").innerHTML = "";
 	container.setAttribute("class", "avatar");					
-	this.loader.stopAnimation();
-	this.loader.destroyLoader();
+//	this.loader.stopAnimation();
+//	this.loader.destroyLoader();
+	this.pie.stopAnimation();
+	this.pie.destroyLoader();
+	
+	
+	this.progressSource.transferStart = null;
+	this.progressSource.transferEnd = null;
 };
