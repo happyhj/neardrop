@@ -20,7 +20,10 @@ DataController.prototype.init = function() {
 		this.unlisten();
 	}.bind(this);
 	this.refuseCallback = function(dataConnection) {
-		this.sendRefusal();
+		dataConnection.send({
+			"kind": "refusal"
+		});
+		dataConnection.close();
 	}.bind(this);
 
 	this.fileEntry = null;
@@ -39,7 +42,7 @@ DataController.prototype.setPeer = function(peer) {
 
 DataController.prototype.listen = function() {
 	// 연결이 들어오기를 기다린다
-	this.peer.removeAllListener('connection');
+	this.peer.removeAllListeners('connection');
 	this.peer.on('connection', this.connectionCallback);
 };
 
@@ -143,12 +146,20 @@ DataController.prototype.initListeners = function() {
 
 	// 전송이 끝났을 때
 	this.fileSaver.on('transferEnd', function() {
-		this.disconnect();
+		// this.disconnect();
+		console.log("thanks");
+		this.connection.send({
+			"kind": "thanks"
+		})
 		this.fileEntry = null;
 		this.emit('transferEnd');
 	}.bind(this));
 	this.fileSender.on('transferEnd', function() {
-		this.disconnect();
+		// this.disconnect();
+		console.log("fileEnd");
+		this.connection.send({
+			"kind": "fileEnd"
+		})
 		this.fileEntry = null;
 		this.emit('transferEnd');
 	}.bind(this));
@@ -191,6 +202,13 @@ DataController.prototype._handleMessage = function(message) {
 				//console.log("[Connection : _handleMessage] incoming message requestChunk");
 				this.fileSender.sendDataChunk(this.connection);
 				break;
+			case "fileEnd": // 수신자가 파일을 다 받았다는 사실을 확인받는다.
+				this.sendThanks();
+				break;
+			case "thanks": // 전송자는 수신자가 파일을 다 받았다는 사실을 확인받는다.
+				// 전송자가 연결을 끊으면 수신자는 자동적으로 연결이 끊어진다.
+				this.disconnect();
+				break;
 			default:
 				debugger;
 				console.log("what a fuck...");
@@ -203,6 +221,8 @@ DataController.prototype._handleMessage = function(message) {
 
 DataController.prototype.getRefused = function() {
 	// TODO: 거절되었다는 메시지를 띄워준다
+	console.log("당신은 바람맞았습니다.");
+	this.disconnect();
 };
 
 DataController.prototype.askOpponent = function(file) {
@@ -239,6 +259,12 @@ DataController.prototype.requestBlockTransfer = function(blockIdx) {
 	if(blockIdx === 0)
 		// 어떤 상대방과 연결되었는지를 UI에 이때 전달
 		this.emit('showProgress', this.connection.peer, 'down');
+};
+
+DataController.prototype.sendThanks = function() {
+	this.connection.send({
+		"kind": "thanks"
+	});
 };
 
 DataController.prototype.getProgress = function() {
