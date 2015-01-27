@@ -32,7 +32,7 @@ UIController.prototype.loadTemplates = function() {
 		this.confirmTemplateSender = _.template(data);
 	}.bind(this), 'html');
 	$.get('./templates/confirm-popup-receiver.html', function (data) {
-		this.confirmTemplateReciever = _.template(data);
+		this.confirmTemplateReceiver = _.template(data);
 	}.bind(this), 'html');
 
 	// TEST용

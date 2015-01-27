@@ -13,6 +13,15 @@ inherits(DataController, EventEmitter);
 DataController.prototype.init = function() {
 	this.peer = null;
 	this.connection = null;
+	this.connectionCallback = function(dataConnection) {
+		this.connection = dataConnection;
+		this._setConnectionHandlers();
+		// (수신자) 연결 성공 시 추가적 연결에 거절 메시지
+		this.unlisten();
+	}.bind(this);
+	this.refuseCallback = function(dataConnection) {
+		this.sendRefusal();
+	}.bind(this);
 
 	this.fileEntry = null;
 	this.fileSaver = new FileSaver();
@@ -24,12 +33,21 @@ DataController.prototype.init = function() {
 
 DataController.prototype.setPeer = function(peer) {
 	this.peer = peer;
-	// 연결이 들어오기를 기다린다
-	this.peer.on('connection', function(dataConnection) {
-		this.connection = dataConnection;
-		this._setConnectionHandlers();
-	}.bind(this));
+	// 최초의 Listening
+	this.listen();
 };
+
+DataController.prototype.listen = function() {
+	// 연결이 들어오기를 기다린다
+	this.peer.removeAllListener('connection');
+	this.peer.on('connection', this.connectionCallback);
+};
+
+DataController.prototype.unlisten = function() {
+	// 추가적인 연결 시도에는 거절 메시지를 보내도록 변경
+	this.peer.off('connection', this.connectionCallback);
+	this.peer.on('connection', this.refuseCallback);
+}
 
 DataController.prototype.connect = function(opponent, file) {
 	console.log(opponent.id +" 와 연결을 시도합니다.");					
@@ -39,7 +57,13 @@ DataController.prototype.connect = function(opponent, file) {
 		// reliable: false,
 		// serialization: "none"
 	});
-	this._setConnectionHandlers();
+	
+	// (전송자) 연결이 성공했다면
+	if (this.connection) {
+		this._setConnectionHandlers();
+		// 또 연결이 들어오는 것을 막는다
+		this.unlisten();
+	}
 };
 
 DataController.prototype.sendRefusal = function() {
@@ -52,7 +76,8 @@ DataController.prototype.sendRefusal = function() {
 };
 
 DataController.prototype.disconnect = function() {
-	this.peer.disconnect();
+	this.connection.close();
+	// 연결 종료 후 새로운 연결을 위해 파일 정보를 초기화한다
 	this.fileEntry = undefined;
 };
 
@@ -83,6 +108,8 @@ DataController.prototype.initListeners = function() {
 	this.on('disconnected', function(args) {
 		var peerId = args[0];
 		console.log(peerId + " 과 연결이 끊어졌습니다.");
+		// 연결이 끊어졌으니 새로운 연결을 기다림
+		this.listen();
 	});
 
 	// 파일 전송 준비가 끝났을 때
