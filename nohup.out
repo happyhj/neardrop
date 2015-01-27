@@ -1,0 +1,210 @@
+Express server listening on port 5400
+[90mGET / [36m304 [90m40ms[0m
+[90mGET /stylesheet/style.css [36m304 [90m10ms[0m
+[90mGET /lib/jquery-2.1.1.min.js [36m304 [90m5ms[0m
+[90mGET /lib/rebound.min.js [36m304 [90m3ms[0m
+[90mGET /lib/playrtc.js [36m304 [90m7ms[0m
+[90mGET /lib/peer_wrapper_for_playrtc.js [36m304 [90m10ms[0m
+[90mGET /script/EventEmitter.js [36m304 [90m2ms[0m
+[90mGET /script/FileSender.js [36m304 [90m4ms[0m
+[90mGET /script/FileSaver.js [36m304 [90m3ms[0m
+[90mGET /script/PieLoader.js [36m304 [90m5ms[0m
+[90mGET /script/StreamLoader.js [36m304 [90m5ms[0m
+[90mGET /script/DataController.js [36m304 [90m9ms[0m
+[90mGET /script/ConfirmPopup.js [36m304 [90m8ms[0m
+[90mGET /script/UIController.js [36m304 [90m1ms[0m
+[90mGET /script/Neighbor.js [36m304 [90m2ms[0m
+[90mGET /script/UserController.js [36m304 [90m4ms[0m
+[90mGET /script/App.js [36m304 [90m3ms[0m
+[2015/01/27 01:39:19.863] [createChannel] method = POST url = https://apis.sktelecom.com/v2/playrtc/channels/channel
+[90mGET /templates/avatar-me.html [36m304 [90m1ms[0m
+[90mGET /templates/avatar-neighbor.html [36m304 [90m3ms[0m
+[90mGET /templates/confirm-popup-sender.html [36m304 [90m2ms[0m
+[90mGET /templates/confirm-popup-receiver.html [36m304 [90m2ms[0m
+[2015/01/27 01:39:20.207] [createChannel] STCODE [200] RES = {"channelId":"CHS11422290450854","channelName":null,"token":{"tokenId":"TKS11422290450865","expiredTime":"86400"},"configuration":{"project":{"servers":{"turn":{"scopeYN":"no"},"signal":{"scopeYN":"yes","supply":"NAG","restfulDomain":"http://211.188.210.31:8070","supplyType":"dynamic","websocketDomain":"ws://211.188.210.31:8090"},"stun":{"scopeYN":"no"},"channel":{"supply":"PlayRTC","scopeYN":"yes","supplyType":"static","url":"ws://211.188.180.71:8080/runtime/webrtc/ws/v1/channel"}},"sdk":{"medias":{"audio":"yes","dataChannel":"yes","video":"yes"},"log":{"type":"debug"}}}}}
+[90mPOST /v2/playrtc/channels/channel [32m200 [90m359ms - 950b[0m
+[90mGET /user_pic/user-1.jpg [32m200 [90m8ms - 18.58kb[0m
+[2015/01/27 01:39:20.727] [createNagAuth] method = POST url = https://apis.sktelecom.com/v2/playrtc/signal/user/S11422290451270
+[2015/01/27 01:39:20.899] [createNagAuth] STCODE [200] RES = {"service":"authentication","data":{"status":"created","authExpires":"84600","authToken":"Ex1B2qM1qFf3A3x1A2x1Y1c2C2b2W1a2D2w1X1x1dUCb2sr5CG","userName":"S11422290451270","allowService":[]}}
+[90mPOST /v2/playrtc/signal/user/S11422290451270 [32m200 [90m179ms - 232b[0m
+[90mGET / [36m304 [90m5ms[0m
+[90mGET /stylesheet/style.css [36m304 [90m2ms[0m
+[90mGET /lib/jquery-2.1.1.min.js [36m304 [90m2ms[0m
+[90mGET /lib/rebound.min.js [36m304 [90m1ms[0m
+[90mGET /lib/playrtc.js [36m304 [90m2ms[0m
+[90mGET /lib/peer_wrapper_for_playrtc.js [36m304 [90m3ms[0m
+[90mGET /script/EventEmitter.js [36m304 [90m2ms[0m
+[90mGET /script/FileSender.js [36m304 [90m2ms[0m
+[90mGET /script/FileSaver.js [36m304 [90m1ms[0m
+[90mGET /script/DataController.js [36m304 [90m1ms[0m
+[90mGET /script/PieLoader.js [36m304 [90m3ms[0m
+[90mGET /script/StreamLoader.js [36m304 [90m1ms[0m
+[90mGET /script/ConfirmPopup.js [36m304 [90m1ms[0m
+[90mGET /script/UIController.js [36m304 [90m1ms[0m
+[90mGET /script/Neighbor.js [36m304 [90m2ms[0m
+[90mGET /script/UserController.js [36m304 [90m1ms[0m
+[90mGET /script/App.js [36m304 [90m1ms[0m
+[90mGET /user_pic/user-3.jpg [36m304 [90m3ms[0m
+[2015/01/27 01:39:22.166] [createChannel] method = POST url = https://apis.sktelecom.com/v2/playrtc/channels/channel
+[90mGET /templates/avatar-me.html [36m304 [90m2ms[0m
+[90mGET /templates/avatar-neighbor.html [36m304 [90m2ms[0m
+[90mGET /templates/confirm-popup-sender.html [36m304 [90m3ms[0m
+[90mGET /templates/confirm-popup-receiver.html [36m304 [90m6ms[0m
+[2015/01/27 01:39:22.476] [createChannel] STCODE [200] RES = {"channelId":"CHS11422290453119","channelName":null,"token":{"tokenId":"TKS11422290453136","expiredTime":"86400"},"configuration":{"project":{"servers":{"turn":{"scopeYN":"no"},"signal":{"scopeYN":"yes","supply":"NAG","restfulDomain":"http://211.188.210.31:8070","supplyType":"dynamic","websocketDomain":"ws://211.188.210.31:8090"},"stun":{"scopeYN":"no"},"channel":{"supply":"PlayRTC","scopeYN":"yes","supplyType":"static","url":"ws://211.188.180.71:8080/runtime/webrtc/ws/v1/channel"}},"sdk":{"medias":{"audio":"yes","dataChannel":"yes","video":"yes"},"log":{"type":"debug"}}}}}
+[90mPOST /v2/playrtc/channels/channel [32m200 [90m316ms - 950b[0m
+[90mGET /user_pic/user-4.jpg [36m304 [90m2ms[0m
+[2015/01/27 01:39:23.006] [createNagAuth] method = POST url = https://apis.sktelecom.com/v2/playrtc/signal/user/S11422290453619
+[2015/01/27 01:39:23.613] [createNagAuth] STCODE [200] RES = {"service":"authentication","data":{"status":"created","authExpires":"84600","authToken":"Ex1B2UcU5Xf3A3x1A2x1Y1c2C2b2W1a2D2w1X1x15Fo6RteQvR","userName":"S11422290453619","allowService":[]}}
+[90mPOST /v2/playrtc/signal/user/S11422290453619 [32m200 [90m609ms - 232b[0m
+[90mGET /user_pic/user-3.jpg [36m304 [90m2ms[0m
+[90mGET /user_pic/user-1.jpg [32m200 [90m4ms - 18.58kb[0m
+[90mGET /user_pic/user-4.jpg [36m304 [90m2ms[0m
+[90mGET /image/upfile.png [36m304 [90m2ms[0m
+[2015/01/27 01:39:42.516] [connectChannel] method = PUT url = https://apis.sktelecom.com/v2/playrtc/channels/channel/CHS11422290450854
+[2015/01/27 01:39:42.744] [connectChannel] STCODE [200] RES = {"channelId":"CHS11422290450854","channelName":null,"token":{"tokenId":"TKS11422290473406","expiredTime":"86400"},"configuration":{"project":{"servers":{"turn":{"scopeYN":"no"},"signal":{"scopeYN":"yes","supply":"NAG","restfulDomain":"http://211.188.210.31:8070","supplyType":"dynamic","websocketDomain":"ws://211.188.210.31:8090"},"stun":{"scopeYN":"no"},"channel":{"supply":"PlayRTC","scopeYN":"yes","supplyType":"static","url":"ws://211.188.180.71:8080/runtime/webrtc/ws/v1/channel"}},"sdk":{"medias":{"audio":"yes","dataChannel":"yes","video":"yes"},"log":{"type":"debug"}}}}}
+[90mPUT /v2/playrtc/channels/channel/CHS11422290450854 [32m200 [90m230ms - 950b[0m
+[2015/01/27 01:39:43.217] [createNagAuth] method = POST url = https://apis.sktelecom.com/v2/playrtc/signal/user/S11422290473759
+[2015/01/27 01:39:43.338] [createNagAuth] STCODE [200] RES = {"service":"authentication","data":{"status":"created","authExpires":"84600","authToken":"Ex1B202SOdf3A3x1A2x1Y1c2C2b2W1a2D2w1X1x1cjhD1x3ABM","userName":"S11422290473759","allowService":[]}}
+[90mPOST /v2/playrtc/signal/user/S11422290473759 [32m200 [90m124ms - 232b[0m
+[2015/01/27 01:39:43.986] [setMonitorLog] method = POST url = https://apis.sktelecom.com/v2/playrtc/monitoring-log
+[2015/01/27 01:39:44.016] [setMonitorLog] method = POST url = https://apis.sktelecom.com/v2/playrtc/monitoring-log
+[2015/01/27 01:39:44.075] [setMonitorLog] STCODE [200] RES = {"result":"Y"}
+[90mPOST /v2/playrtc/monitoring-log [32m200 [90m92ms - 19b[0m
+[2015/01/27 01:39:44.107] [setMonitorLog] STCODE [200] RES = {"result":"Y"}
+[90mPOST /v2/playrtc/monitoring-log [32m200 [90m95ms - 19b[0m
+[2015/01/27 01:39:46.485] [setMonitorLog] method = POST url = https://apis.sktelecom.com/v2/playrtc/monitoring-log
+[2015/01/27 01:39:46.579] [setMonitorLog] STCODE [200] RES = {"result":"Y"}
+[90mPOST /v2/playrtc/monitoring-log [32m200 [90m96ms - 19b[0m
+[2015/01/27 01:39:48.817] [setMonitorLog] method = POST url = https://apis.sktelecom.com/v2/playrtc/monitoring-log
+[2015/01/27 01:39:48.860] [setMonitorLog] method = POST url = https://apis.sktelecom.com/v2/playrtc/monitoring-log
+[2015/01/27 01:39:48.866] [setMonitorLog] method = POST url = https://apis.sktelecom.com/v2/playrtc/monitoring-log
+[2015/01/27 01:39:48.899] [setMonitorLog] method = POST url = https://apis.sktelecom.com/v2/playrtc/monitoring-log
+[2015/01/27 01:39:48.925] [setMonitorLog] STCODE [200] RES = {"result":"Y"}
+[90mPOST /v2/playrtc/monitoring-log [32m200 [90m110ms - 19b[0m
+[90mGET /image/downfile.png [36m304 [90m7ms[0m
+[2015/01/27 01:39:48.965] [setMonitorLog] STCODE [200] RES = {"result":"Y"}
+[90mPOST /v2/playrtc/monitoring-log [32m200 [90m101ms - 19b[0m
+[2015/01/27 01:39:49.001] [setMonitorLog] STCODE [200] RES = {"result":"Y"}
+[90mPOST /v2/playrtc/monitoring-log [32m200 [90m143ms - 19b[0m
+[2015/01/27 01:39:49.013] [setMonitorLog] STCODE [200] RES = {"result":"Y"}
+[90mPOST /v2/playrtc/monitoring-log [32m200 [90m116ms - 19b[0m
+[90mOPTIONS /v2/playrtc/channels/channel [32m200 [90m4ms - 2b[0m
+[2015/01/27 02:32:03.307] [createChannel] method = POST url = https://apis.sktelecom.com/v2/playrtc/channels/channel
+[2015/01/27 02:32:03.636] [createChannel] STCODE [200] RES = {"channelId":"CHS11422293614268","channelName":null,"token":{"tokenId":"TKS11422293614286","expiredTime":"86400"},"configuration":{"project":{"servers":{"turn":{"scopeYN":"no"},"signal":{"scopeYN":"yes","supply":"NAG","restfulDomain":"http://211.188.210.31:8070","supplyType":"dynamic","websocketDomain":"ws://211.188.210.31:8090"},"stun":{"scopeYN":"no"},"channel":{"supply":"PlayRTC","scopeYN":"yes","supplyType":"static","url":"ws://211.188.180.71:8080/runtime/webrtc/ws/v1/channel"}},"sdk":{"medias":{"audio":"yes","dataChannel":"yes","video":"yes"},"log":{"type":"debug"}}}}}
+[90mPOST /v2/playrtc/channels/channel [32m200 [90m332ms - 950b[0m
+[90mOPTIONS /v2/playrtc/signal/user/S11422293614453 [32m200 [90m2ms - 2b[0m
+[2015/01/27 02:32:03.908] [createNagAuth] method = POST url = https://apis.sktelecom.com/v2/playrtc/signal/user/S11422293614453
+[2015/01/27 02:32:04.050] [createNagAuth] STCODE [200] RES = {"service":"authentication","data":{"status":"created","authExpires":"84600","authToken":"Ex1B2Pn8hRf3A3x1A2x1Y1c2C2b2W1a2D2w1X1x1Tgcg48dO42","userName":"S11422293614453","allowService":[]}}
+[90mPOST /v2/playrtc/signal/user/S11422293614453 [32m200 [90m144ms - 232b[0m
+[90mOPTIONS /v2/playrtc/channels/channel [32m200 [90m1ms - 2b[0m
+[2015/01/27 02:34:33.319] [createChannel] method = POST url = https://apis.sktelecom.com/v2/playrtc/channels/channel
+[2015/01/27 02:34:33.599] [createChannel] STCODE [200] RES = {"channelId":"CHS11422293764261","channelName":null,"token":{"tokenId":"TKS11422293764278","expiredTime":"86400"},"configuration":{"project":{"servers":{"turn":{"scopeYN":"no"},"signal":{"scopeYN":"yes","supply":"NAG","restfulDomain":"http://211.188.210.31:8070","supplyType":"dynamic","websocketDomain":"ws://211.188.210.31:8090"},"stun":{"scopeYN":"no"},"channel":{"supply":"PlayRTC","scopeYN":"yes","supplyType":"static","url":"ws://211.188.180.71:8080/runtime/webrtc/ws/v1/channel"}},"sdk":{"medias":{"audio":"yes","dataChannel":"yes","video":"yes"},"log":{"type":"debug"}}}}}
+[90mPOST /v2/playrtc/channels/channel [32m200 [90m283ms - 950b[0m
+[90mOPTIONS /v2/playrtc/signal/user/S11422293764525 [32m200 [90m1ms - 2b[0m
+[2015/01/27 02:34:34.032] [createNagAuth] method = POST url = https://apis.sktelecom.com/v2/playrtc/signal/user/S11422293764525
+[2015/01/27 02:34:34.171] [createNagAuth] STCODE [200] RES = {"service":"authentication","data":{"status":"created","authExpires":"84600","authToken":"Ex1B20K5sff3A3x1A2x1Y1c2C2b2W1a2D2w1X1x177T4l26ahb","userName":"S11422293764525","allowService":[]}}
+[90mPOST /v2/playrtc/signal/user/S11422293764525 [32m200 [90m141ms - 232b[0m
+[90mOPTIONS /v2/playrtc/channels/channel [32m200 [90m0ms - 2b[0m
+[2015/01/27 02:34:56.688] [createChannel] method = POST url = https://apis.sktelecom.com/v2/playrtc/channels/channel
+[2015/01/27 02:34:56.919] [createChannel] STCODE [200] RES = {"channelId":"CHS11422293787589","channelName":null,"token":{"tokenId":"TKS11422293787600","expiredTime":"86400"},"configuration":{"project":{"servers":{"turn":{"scopeYN":"no"},"signal":{"scopeYN":"yes","supply":"NAG","restfulDomain":"http://211.188.210.31:8070","supplyType":"dynamic","websocketDomain":"ws://211.188.210.31:8090"},"stun":{"scopeYN":"no"},"channel":{"supply":"PlayRTC","scopeYN":"yes","supplyType":"static","url":"ws://211.188.180.71:8080/runtime/webrtc/ws/v1/channel"}},"sdk":{"medias":{"audio":"yes","dataChannel":"yes","video":"yes"},"log":{"type":"debug"}}}}}
+[90mPOST /v2/playrtc/channels/channel [32m200 [90m234ms - 950b[0m
+[90mOPTIONS /v2/playrtc/signal/user/S11422293787871 [32m200 [90m1ms - 2b[0m
+[2015/01/27 02:34:57.364] [createNagAuth] method = POST url = https://apis.sktelecom.com/v2/playrtc/signal/user/S11422293787871
+[2015/01/27 02:34:57.477] [createNagAuth] STCODE [200] RES = {"service":"authentication","data":{"status":"created","authExpires":"84600","authToken":"Ex1B2hCU31f3A3x1A2x1Y1c2C2b2W1a2D2w1X1x18liMb6fl7z","userName":"S11422293787871","allowService":[]}}
+[90mPOST /v2/playrtc/signal/user/S11422293787871 [32m200 [90m116ms - 232b[0m
+[90mOPTIONS /v2/playrtc/channels/channel [32m200 [90m0ms - 2b[0m
+[2015/01/27 02:35:04.275] [createChannel] method = POST url = https://apis.sktelecom.com/v2/playrtc/channels/channel
+[2015/01/27 02:35:04.505] [createChannel] STCODE [200] RES = {"channelId":"CHS11422293795175","channelName":null,"token":{"tokenId":"TKS11422293795185","expiredTime":"86400"},"configuration":{"project":{"servers":{"turn":{"scopeYN":"no"},"signal":{"scopeYN":"yes","supply":"NAG","restfulDomain":"http://211.188.210.31:8070","supplyType":"dynamic","websocketDomain":"ws://211.188.210.31:8090"},"stun":{"scopeYN":"no"},"channel":{"supply":"PlayRTC","scopeYN":"yes","supplyType":"static","url":"ws://211.188.180.71:8080/runtime/webrtc/ws/v1/channel"}},"sdk":{"medias":{"audio":"yes","dataChannel":"yes","video":"yes"},"log":{"type":"debug"}}}}}
+[90mPOST /v2/playrtc/channels/channel [32m200 [90m232ms - 950b[0m
+[90mOPTIONS /v2/playrtc/signal/user/S11422293795290 [32m200 [90m1ms - 2b[0m
+[2015/01/27 02:35:04.646] [createNagAuth] method = POST url = https://apis.sktelecom.com/v2/playrtc/signal/user/S11422293795290
+[2015/01/27 02:35:04.751] [createNagAuth] STCODE [200] RES = {"service":"authentication","data":{"status":"created","authExpires":"84600","authToken":"Ex1B2P1CBCf3A3x1A2x1Y1c2C2b2W1a2D2w1X1x1Ssov78Bako","userName":"S11422293795290","allowService":[]}}
+[90mPOST /v2/playrtc/signal/user/S11422293795290 [32m200 [90m107ms - 232b[0m
+[90mOPTIONS /v2/playrtc/channels/channel/CHS11422293787589 [32m200 [90m1ms - 2b[0m
+[2015/01/27 02:35:19.036] [connectChannel] method = PUT url = https://apis.sktelecom.com/v2/playrtc/channels/channel/CHS11422293787589
+[2015/01/27 02:35:19.253] [connectChannel] STCODE [200] RES = {"channelId":"CHS11422293787589","channelName":null,"token":{"tokenId":"TKS11422293809931","expiredTime":"86400"},"configuration":{"project":{"servers":{"turn":{"scopeYN":"no"},"signal":{"scopeYN":"yes","supply":"NAG","restfulDomain":"http://211.188.210.31:8070","supplyType":"dynamic","websocketDomain":"ws://211.188.210.31:8090"},"stun":{"scopeYN":"no"},"channel":{"supply":"PlayRTC","scopeYN":"yes","supplyType":"static","url":"ws://211.188.180.71:8080/runtime/webrtc/ws/v1/channel"}},"sdk":{"medias":{"audio":"yes","dataChannel":"yes","video":"yes"},"log":{"type":"debug"}}}}}
+[90mPUT /v2/playrtc/channels/channel/CHS11422293787589 [32m200 [90m219ms - 950b[0m
+[90mOPTIONS /v2/playrtc/signal/user/S11422293810040 [32m200 [90m1ms - 2b[0m
+[2015/01/27 02:35:19.401] [createNagAuth] method = POST url = https://apis.sktelecom.com/v2/playrtc/signal/user/S11422293810040
+[2015/01/27 02:35:19.523] [createNagAuth] STCODE [412] RES = {"error":{"service":"webRTC","code":1121,"message":"NAG 서버에서 결과를 받지 못하였습니다."}}
+[90mPOST /v2/playrtc/signal/user/S11422293810040 [32m200 [90m125ms - 134b[0m
+[90mOPTIONS /v2/playrtc/channels/channel [32m200 [90m1ms - 2b[0m
+[2015/01/27 03:16:26.200] [createChannel] method = POST url = https://apis.sktelecom.com/v2/playrtc/channels/channel
+[2015/01/27 03:16:27.029] [createChannel] STCODE [200] RES = {"channelId":"CHS21422296277753","channelName":null,"token":{"tokenId":"TKS21422296277772","expiredTime":"86400"},"configuration":{"project":{"servers":{"turn":{"scopeYN":"no"},"signal":{"scopeYN":"yes","supply":"NAG","restfulDomain":"http://211.188.210.31:8070","supplyType":"dynamic","websocketDomain":"ws://211.188.210.31:8090"},"stun":{"scopeYN":"no"},"channel":{"supply":"PlayRTC","scopeYN":"yes","supplyType":"static","url":"ws://211.188.180.72:8080/runtime/webrtc/ws/v1/channel"}},"sdk":{"medias":{"audio":"yes","dataChannel":"yes","video":"yes"},"log":{"type":"debug"}}}}}
+[90mPOST /v2/playrtc/channels/channel [32m200 [90m836ms - 950b[0m
+[90mOPTIONS /v2/playrtc/signal/user/S21422296278046 [32m200 [90m1ms - 2b[0m
+[2015/01/27 03:16:27.460] [createNagAuth] method = POST url = https://apis.sktelecom.com/v2/playrtc/signal/user/S21422296278046
+[2015/01/27 03:16:27.599] [createNagAuth] STCODE [200] RES = {"service":"authentication","data":{"status":"created","authExpires":"84600","authToken":"Ex1B2tnVmff3A3x1A2x1Y1c2C2b2W1a2D2w1X1x1Te36wZkhsx","userName":"S21422296278046","allowService":[]}}
+[90mPOST /v2/playrtc/signal/user/S21422296278046 [32m200 [90m142ms - 232b[0m
+[90mOPTIONS /v2/playrtc/channels/channel [32m200 [90m2ms - 2b[0m
+[2015/01/27 03:16:31.507] [createChannel] method = POST url = https://apis.sktelecom.com/v2/playrtc/channels/channel
+[2015/01/27 03:16:31.753] [createChannel] STCODE [200] RES = {"channelId":"CHS21422296282486","channelName":null,"token":{"tokenId":"TKS21422296282496","expiredTime":"86400"},"configuration":{"project":{"servers":{"turn":{"scopeYN":"no"},"signal":{"scopeYN":"yes","supply":"NAG","restfulDomain":"http://211.188.210.31:8070","supplyType":"dynamic","websocketDomain":"ws://211.188.210.31:8090"},"stun":{"scopeYN":"no"},"channel":{"supply":"PlayRTC","scopeYN":"yes","supplyType":"static","url":"ws://211.188.180.72:8080/runtime/webrtc/ws/v1/channel"}},"sdk":{"medias":{"audio":"yes","dataChannel":"yes","video":"yes"},"log":{"type":"debug"}}}}}
+[90mPOST /v2/playrtc/channels/channel [32m200 [90m248ms - 950b[0m
+[90mOPTIONS /v2/playrtc/signal/user/S21422296282750 [32m200 [90m2ms - 2b[0m
+[2015/01/27 03:16:32.063] [createNagAuth] method = POST url = https://apis.sktelecom.com/v2/playrtc/signal/user/S21422296282750
+[2015/01/27 03:16:32.197] [createNagAuth] STCODE [200] RES = {"service":"authentication","data":{"status":"created","authExpires":"84600","authToken":"Ex1B2OUQqAf3A3x1A2x1Y1c2C2b2W1a2D2w1X1x1D3w08uaDkn","userName":"S21422296282750","allowService":[]}}
+[90mPOST /v2/playrtc/signal/user/S21422296282750 [32m200 [90m146ms - 232b[0m
+[90mOPTIONS /v2/playrtc/channels/channel/CHS21422296277753 [32m200 [90m1ms - 2b[0m
+[2015/01/27 03:16:37.265] [connectChannel] method = PUT url = https://apis.sktelecom.com/v2/playrtc/channels/channel/CHS21422296277753
+[2015/01/27 03:16:37.501] [connectChannel] STCODE [200] RES = {"channelId":"CHS21422296277753","channelName":null,"token":{"tokenId":"TKS21422296288240","expiredTime":"86400"},"configuration":{"project":{"servers":{"turn":{"scopeYN":"no"},"signal":{"scopeYN":"yes","supply":"NAG","restfulDomain":"http://211.188.210.31:8070","supplyType":"dynamic","websocketDomain":"ws://211.188.210.31:8090"},"stun":{"scopeYN":"no"},"channel":{"supply":"PlayRTC","scopeYN":"yes","supplyType":"static","url":"ws://211.188.180.72:8080/runtime/webrtc/ws/v1/channel"}},"sdk":{"medias":{"audio":"yes","dataChannel":"yes","video":"yes"},"log":{"type":"debug"}}}}}
+[90mPUT /v2/playrtc/channels/channel/CHS21422296277753 [32m200 [90m240ms - 950b[0m
+[90mOPTIONS /v2/playrtc/signal/user/S21422296288359 [32m200 [90m2ms - 2b[0m
+[2015/01/27 03:16:37.670] [createNagAuth] method = POST url = https://apis.sktelecom.com/v2/playrtc/signal/user/S21422296288359
+[2015/01/27 03:16:37.802] [createNagAuth] STCODE [200] RES = {"service":"authentication","data":{"status":"created","authExpires":"84600","authToken":"Ex1B2Lg742f3A3x1A2x1Y1c2C2b2W1a2D2w1X1x18VkrUbUa8J","userName":"S21422296288359","allowService":[]}}
+[90mPOST /v2/playrtc/signal/user/S21422296288359 [32m200 [90m135ms - 232b[0m
+[90mOPTIONS /v2/playrtc/monitoring-log [32m200 [90m1ms - 2b[0m
+[90mOPTIONS /v2/playrtc/monitoring-log [32m200 [90m2ms - 2b[0m
+[2015/01/27 03:16:38.028] [setMonitorLog] method = POST url = https://apis.sktelecom.com/v2/playrtc/monitoring-log
+[2015/01/27 03:16:38.064] [setMonitorLog] method = POST url = https://apis.sktelecom.com/v2/playrtc/monitoring-log
+[2015/01/27 03:16:38.104] [setMonitorLog] STCODE [200] RES = {"result":"Y"}
+[90mPOST /v2/playrtc/monitoring-log [32m200 [90m79ms - 19b[0m
+[2015/01/27 03:16:38.142] [setMonitorLog] STCODE [200] RES = {"result":"Y"}
+[90mPOST /v2/playrtc/monitoring-log [32m200 [90m81ms - 19b[0m
+[90mOPTIONS /v2/playrtc/monitoring-log [32m200 [90m2ms - 2b[0m
+[2015/01/27 03:16:40.108] [setMonitorLog] method = POST url = https://apis.sktelecom.com/v2/playrtc/monitoring-log
+[2015/01/27 03:16:40.209] [setMonitorLog] STCODE [200] RES = {"result":"Y"}
+[90mPOST /v2/playrtc/monitoring-log [32m200 [90m104ms - 19b[0m
+[2015/01/27 03:16:42.257] [setMonitorLog] method = POST url = https://apis.sktelecom.com/v2/playrtc/monitoring-log
+[2015/01/27 03:16:42.272] [setMonitorLog] method = POST url = https://apis.sktelecom.com/v2/playrtc/monitoring-log
+[2015/01/27 03:16:42.280] [setMonitorLog] method = POST url = https://apis.sktelecom.com/v2/playrtc/monitoring-log
+[2015/01/27 03:16:42.285] [setMonitorLog] method = POST url = https://apis.sktelecom.com/v2/playrtc/monitoring-log
+[2015/01/27 03:16:42.376] [setMonitorLog] STCODE [200] RES = {"result":"Y"}
+[90mPOST /v2/playrtc/monitoring-log [32m200 [90m108ms - 19b[0m
+[2015/01/27 03:16:42.383] [setMonitorLog] STCODE [200] RES = {"result":"Y"}
+[90mPOST /v2/playrtc/monitoring-log [32m200 [90m107ms - 19b[0m
+[2015/01/27 03:16:42.400] [setMonitorLog] STCODE [200] RES = {"result":"Y"}
+[90mPOST /v2/playrtc/monitoring-log [32m200 [90m145ms - 19b[0m
+[2015/01/27 03:16:42.416] [setMonitorLog] STCODE [200] RES = {"result":"Y"}
+[90mPOST /v2/playrtc/monitoring-log [32m200 [90m135ms - 19b[0m
+[90mOPTIONS /v2/playrtc/channels/channel [32m200 [90m5ms - 2b[0m
+[2015/01/27 03:43:16.752] [createChannel] method = POST url = https://apis.sktelecom.com/v2/playrtc/channels/channel
+[2015/01/27 03:43:17.018] [createChannel] STCODE [200] RES = {"channelId":"CHS21422297887712","channelName":null,"token":{"tokenId":"TKS21422297887732","expiredTime":"86400"},"configuration":{"project":{"servers":{"turn":{"scopeYN":"no"},"signal":{"scopeYN":"yes","supply":"NAG","restfulDomain":"http://211.188.210.31:8070","supplyType":"dynamic","websocketDomain":"ws://211.188.210.31:8090"},"stun":{"scopeYN":"no"},"channel":{"supply":"PlayRTC","scopeYN":"yes","supplyType":"static","url":"ws://211.188.180.72:8080/runtime/webrtc/ws/v1/channel"}},"sdk":{"medias":{"audio":"yes","dataChannel":"yes","video":"yes"},"log":{"type":"debug"}}}}}
+[90mPOST /v2/playrtc/channels/channel [32m200 [90m273ms - 950b[0m
+[90mOPTIONS /v2/playrtc/signal/user/S21422297888019 [32m200 [90m1ms - 2b[0m
+[2015/01/27 03:43:17.487] [createNagAuth] method = POST url = https://apis.sktelecom.com/v2/playrtc/signal/user/S21422297888019
+[2015/01/27 03:43:17.649] [createNagAuth] STCODE [200] RES = {"service":"authentication","data":{"status":"created","authExpires":"84600","authToken":"Ex1B21LyAwf3A3x1A2x1Y1c2C2b2W1a2D2w1X1x1vTt783be4r","userName":"S21422297888019","allowService":[]}}
+[90mPOST /v2/playrtc/signal/user/S21422297888019 [32m200 [90m166ms - 232b[0m
+[90mOPTIONS /v2/playrtc/channels/channel [32m200 [90m1ms - 2b[0m
+[2015/01/27 03:43:30.932] [createChannel] method = POST url = https://apis.sktelecom.com/v2/playrtc/channels/channel
+[2015/01/27 03:43:33.534] [createChannel] STCODE [200] RES = {"channelId":"CHS21422297904227","channelName":null,"token":{"tokenId":"TKS21422297904238","expiredTime":"86400"},"configuration":{"project":{"servers":{"turn":{"scopeYN":"no"},"signal":{"scopeYN":"yes","supply":"NAG","restfulDomain":"http://211.188.210.31:8070","supplyType":"dynamic","websocketDomain":"ws://211.188.210.31:8090"},"stun":{"scopeYN":"no"},"channel":{"supply":"PlayRTC","scopeYN":"yes","supplyType":"static","url":"ws://211.188.180.72:8080/runtime/webrtc/ws/v1/channel"}},"sdk":{"medias":{"audio":"yes","dataChannel":"yes","video":"yes"},"log":{"type":"debug"}}}}}
+[90mPOST /v2/playrtc/channels/channel [32m200 [90m2639ms - 950b[0m
+[90mOPTIONS /v2/playrtc/signal/user/S21422297904590 [32m200 [90m0ms - 2b[0m
+[2015/01/27 03:43:34.001] [createNagAuth] method = POST url = https://apis.sktelecom.com/v2/playrtc/signal/user/S21422297904590
+[2015/01/27 03:43:34.141] [createNagAuth] STCODE [200] RES = {"service":"authentication","data":{"status":"created","authExpires":"84600","authToken":"Ex1B2CzrN4f3A3x1A2x1Y1c2C2b2W1a2D2w1X1x14fZp4IUfq2","userName":"S21422297904590","allowService":[]}}
+[90mPOST /v2/playrtc/signal/user/S21422297904590 [32m200 [90m152ms - 232b[0m
+[90mOPTIONS /v2/playrtc/channels/channel [32m200 [90m1ms - 2b[0m
+[2015/01/27 03:44:11.248] [createChannel] method = POST url = https://apis.sktelecom.com/v2/playrtc/channels/channel
+[2015/01/27 03:44:11.588] [createChannel] STCODE [200] RES = {"channelId":"CHS21422297942280","channelName":null,"token":{"tokenId":"TKS21422297942297","expiredTime":"86400"},"configuration":{"project":{"servers":{"turn":{"scopeYN":"no"},"signal":{"scopeYN":"yes","supply":"NAG","restfulDomain":"http://211.188.210.31:8070","supplyType":"dynamic","websocketDomain":"ws://211.188.210.31:8090"},"stun":{"scopeYN":"no"},"channel":{"supply":"PlayRTC","scopeYN":"yes","supplyType":"static","url":"ws://211.188.180.72:8080/runtime/webrtc/ws/v1/channel"}},"sdk":{"medias":{"audio":"yes","dataChannel":"yes","video":"yes"},"log":{"type":"debug"}}}}}
+[90mPOST /v2/playrtc/channels/channel [32m200 [90m346ms - 950b[0m
+[90mOPTIONS /v2/playrtc/signal/user/S21422297942574 [32m200 [90m7ms - 2b[0m
+[2015/01/27 03:44:12.084] [createNagAuth] method = POST url = https://apis.sktelecom.com/v2/playrtc/signal/user/S21422297942574
+[2015/01/27 03:44:12.239] [createNagAuth] STCODE [200] RES = {"service":"authentication","data":{"status":"created","authExpires":"84600","authToken":"Ex1B2pF0WYf3A3x1A2x1Y1c2C2b2W1a2D2w1X1x10bJUGiV12M","userName":"S21422297942574","allowService":[]}}
+[90mPOST /v2/playrtc/signal/user/S21422297942574 [32m200 [90m158ms - 232b[0m
+[90mOPTIONS /v2/playrtc/channels/channel [32m200 [90m1ms - 2b[0m
+[2015/01/27 03:44:17.501] [createChannel] method = POST url = https://apis.sktelecom.com/v2/playrtc/channels/channel
+[2015/01/27 03:44:17.734] [createChannel] STCODE [200] RES = {"channelId":"CHS21422297948437","channelName":null,"token":{"tokenId":"TKS21422297948447","expiredTime":"86400"},"configuration":{"project":{"servers":{"turn":{"scopeYN":"no"},"signal":{"scopeYN":"yes","supply":"NAG","restfulDomain":"http://211.188.210.31:8070","supplyType":"dynamic","websocketDomain":"ws://211.188.210.31:8090"},"stun":{"scopeYN":"no"},"channel":{"supply":"PlayRTC","scopeYN":"yes","supplyType":"static","url":"ws://211.188.180.72:8080/runtime/webrtc/ws/v1/channel"}},"sdk":{"medias":{"audio":"yes","dataChannel":"yes","video":"yes"},"log":{"type":"debug"}}}}}
+[90mPOST /v2/playrtc/channels/channel [32m200 [90m237ms - 950b[0m
+[90mOPTIONS /v2/playrtc/signal/user/S21422297948565 [32m200 [90m1ms - 2b[0m
+[2015/01/27 03:44:17.909] [createNagAuth] method = POST url = https://apis.sktelecom.com/v2/playrtc/signal/user/S21422297948565
+[2015/01/27 03:44:18.028] [createNagAuth] STCODE [200] RES = {"service":"authentication","data":{"status":"created","authExpires":"84600","authToken":"Ex1B2oFjjnf3A3x1A2x1Y1c2C2b2W1a2D2w1X1x1tz7CBV453A","userName":"S21422297948565","allowService":[]}}
+[90mPOST /v2/playrtc/signal/user/S21422297948565 [32m200 [90m122ms - 232b[0m

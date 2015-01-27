@@ -6,6 +6,9 @@ function ConfirmPopup() {
 }
 
 ConfirmPopup.prototype.open = function(param) {
+	console.log("ConfirmPopup : open : param");
+	console.log(param);
+	
 	var container = document.querySelector(".acception-container");
 	if(container) {
 		document.body.removeChild(container);
