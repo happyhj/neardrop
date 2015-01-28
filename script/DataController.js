@@ -37,7 +37,29 @@ DataController.prototype.initTools = function() {
 	
 	this.transferStart = null;
 	this.transferEnd = null;
-}
+};
+
+DataController.prototype.initListeners = function() {
+	// Connection 연결 수립 이후 대기 상태가 되면
+	this.on('ready', function(args) {
+		// var peerId = args[0];
+		if(this.fileEntry !== null) {
+			// 수신자에게 파일 정보를 전달
+			this.askOpponent(this.fileEntry);
+			// 전송자는 파일 전달 준비
+			this.fileSender = new FileSender();
+			this.initListenersOfFileSender();
+			this.fileSender.setFile(this.fileEntry, this.CHUNK_SIZE, this.BLOCK_SIZE);
+		}
+	}.bind(this));
+	
+	this.on('disconnected', function(args) {
+		var peerId = args[0];
+		console.log(peerId + " 과 연결이 끊어졌습니다.");
+		// 연결이 끊어졌으니 새로운 연결을 기다림
+		this.listen();
+	});
+};
 
 DataController.prototype.setPeer = function(peer) {
 	this.peer = peer;
@@ -71,14 +93,6 @@ DataController.prototype.connect = function(opponent, file) {
 		this._setConnectionHandlers();
 		// 또 연결이 들어오는 것을 막는다
 		this.unlisten();
-	}
-};
-
-DataController.prototype.sendRefusal = function() {
-	if(this.connection && this.connection.open===true) {
-		this.connection.send({
-			"kind": "refusal"
-		});
 	}
 };
 
@@ -116,14 +130,11 @@ DataController.prototype.initListenersOfFileSender = function() {
 	}.bind(this));
 	
 	this.fileSender.on('transferEnd', function() {
-		// this.disconnect();
 		console.log("fileEnd");
 		this.connection.send({
 			"kind": "fileEnd"
 		});
-		this.emit('transferEnd');
-		this.fileEntry = null;
-		this.fileSender = null;
+		
 //		this.fileSender.blockTranferContext.sentChunkCount = null;
 //		this.fileSender.blockTranferContext.totalChunkCount = undefined;	
 	}.bind(this));
@@ -142,8 +153,7 @@ DataController.prototype.initListenersOfFileSaver = function() {
 		});
 	}.bind(this));
 
-	// 블록이 보내졌을 때와 받았을 때
-
+	// 블록을 다 받았을 때
 	this.fileSaver.on('nextBlock', function(blockIdx) {
 		this.requestBlockTransfer(blockIdx);
 		this.emit('updateProgress', this.getProgress());
@@ -157,27 +167,6 @@ DataController.prototype.initListenersOfFileSaver = function() {
 	}.bind(this));
 
 }
-DataController.prototype.initListeners = function() {
-	// Connection 연결 수립 이후 대기 상태가 되면
-	this.on('ready', function(args) {
-		// var peerId = args[0];
-		if(this.fileEntry !== null) {
-			// 수신자에게 파일 정보를 전달
-			this.askOpponent(this.fileEntry);
-			// 전송자는 파일 전달 준비
-			this.fileSender = new FileSender();
-			this.initListenersOfFileSender();
-			this.fileSender.setFile(this.fileEntry, this.CHUNK_SIZE, this.BLOCK_SIZE);
-		}
-	}.bind(this));
-	
-	this.on('disconnected', function(args) {
-		var peerId = args[0];
-		console.log(peerId + " 과 연결이 끊어졌습니다.");
-		// 연결이 끊어졌으니 새로운 연결을 기다림
-		this.listen();
-	});
-};
 
 DataController.prototype._handleMessage = function(message) {
 	if( message.byteLength !== undefined ) { // ArrayBuffer 가 도착한 것
@@ -212,6 +201,9 @@ DataController.prototype._handleMessage = function(message) {
 				this.fileSender.sendDataChunk(this.connection);
 				break;
 			case "thanks": // 볼일이 끝났다. 연결을 끊는다.
+				this.emit('transferEnd');
+				this.fileEntry = null;
+				this.fileSender = null;
 				// 송신자가 연결을 끊으면 수신자는 자동적으로 연결이 끊어진다.
 				this.disconnect();
 				break;
