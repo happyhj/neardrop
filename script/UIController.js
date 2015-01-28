@@ -209,7 +209,7 @@ UIController.prototype.showProgress =  function(peerId, dir) {
 	});
 	this.pie.startAnimation();
 		
-	this.stream = new Stream({
+	this.stream = new StreamLoader({
 		containerEl: streamContainer,
 		direction: dir
 	});
