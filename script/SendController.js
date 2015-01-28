@@ -21,11 +21,6 @@ SendController.prototype.init = function() {
 		this._handleMessage(message);
 	}.bind(this));
 
-	this.fileSender.on('fileSendPrepared', function(fileInfo) {
-		// UI에서 다루도록 이벤트를 상위 계층으로 올린다.
-		this.emit('fileSendPrepared', fileInfo);
-	}.bind(this));
-
 	this.fileSender.on("blockContextInitialized", function() {
 		this.fileSender.sendDataChunk(this.connection);
 	}.bind(this));
@@ -40,6 +35,8 @@ SendController.prototype.init = function() {
 			"kind": "fileEnd"
 		});
 	}.bind(this));
+
+	this.repeat('fileSendPrepared', this.fileSender);
 };
 
 SendController.prototype.sendFile = function(file) {
@@ -78,9 +75,6 @@ SendController.prototype._handleMessage = function(message) {
 			this.fileSender.sendDataChunk(this.connection);
 			break;
 		case "thanks": // 볼일이 끝났다. 연결을 끊는다.
-			this.emit('transferEnd');
-			this.fileEntry = null;
-			this.fileSender = null;
 			// 송신자가 연결을 끊으면 수신자는 자동적으로 연결이 끊어진다.
 			this.connection.close();
 			break;

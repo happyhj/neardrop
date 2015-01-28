@@ -66,7 +66,7 @@ App.prototype.initListeners = function() {
 
 		// 수락한다면 바로 달라고 요청을 보낸다. 
 		var yesCallback = function(){ // YES 를 눌렀을 경우 실행하는 함수.
-			this.peerController.transferStart = Date.now();
+			// TODO: App이 DataController까지 접근하는건 좋지 않음
 			this.peerController.dataController.requestBlockTransfer();
 			this.uiController.setFileInfo(file);
 		}.bind(this);
@@ -106,18 +106,8 @@ App.prototype.initListeners = function() {
 		this.uiController.updateProgress(progress);
 	}.bind(this));
 
-	this.peerController.on('transferEnd', function() {
-/*
-		console.log("트랜스퍼가 끝났으므로 : 초기화");
-		this.peerController.initTools();
-		this.peerController.initListeners();
-*/	
+	// 아예 Connection이 끊길 때 UI 변화를 주는 건 어떨까?
+	this.peerController.on('close', function() {
 		this.uiController.transferEnd();
-		
-//		this.peerController.fileSender.blockTranferContext = null;
-//		this.peerController.fileSaver.blockTranferContext = null;
-
-//		this.peerController.initTools();
-//		this.peerController.initListenersOnFileDelegate();
 	}.bind(this));
 }

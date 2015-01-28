@@ -18,12 +18,6 @@ SaveController.prototype.init = function() {
 		this._handleMessage(message);
 	}.bind(this));
 
-	this.fileSaver.on('fileSavePrepared', function(fileInfo) {
-		// UI에서 다루도록 이벤트를 상위 계층으로 올린다.
-		console.log("fileSavePrepared triggered");
-		this.emit('fileSavePrepared', fileInfo);
-	}.bind(this));
-
 	this.fileSaver.on('chunkStored', function() {
 		this.connection.send({
 			"kind": "requestChunk"
@@ -36,12 +30,7 @@ SaveController.prototype.init = function() {
 		this.emit('updateProgress', this.getProgress());
 	}.bind(this));
 
-	// 전송이 끝났을 때
-	this.fileSaver.on('transferEnd', function() {
-		this.emit('transferEnd');
-		this.fileEntry = null;
-		this.fileSaver = null;
-	}.bind(this));
+	this.repeat('fileSavePrepared', this.fileSaver);
 };
 
 SaveController.prototype._handleMessage = function(message) {
@@ -65,7 +54,9 @@ SaveController.prototype._handleMessage = function(message) {
 				// 이건 레알 인사치레. 사실 파일만 다 받으면 TransferEnd이벤트가 발생해서
 				// 파일 다운받고 UI 처리하고 다 한다.
 				console.log("thanks");
-				this.sendThanks();
+				this.connection.send({
+					"kind": "thanks"
+				});
 				break;
 			
 			default:
@@ -83,6 +74,7 @@ SaveController.prototype.requestBlockTransfer = function(blockIdx) {
 	// 첫 수락시엔 App에서 인자 없이 실행하므로
 	if (!blockIdx) {
 		blockIdx = 0;
+		this.transferStart = Date.now();
 		// 어떤 상대방과 연결되었는지를 UI에 이때 전달, 프로그레스 바 생성
 		this.emit('showProgress', this.connection.peer, 'down');
 	}
@@ -92,12 +84,6 @@ SaveController.prototype.requestBlockTransfer = function(blockIdx) {
 	this.connection.send({
 		"kind": "requestBlock",
 		"blockIndex": blockIdx
-	});
-};
-
-SaveController.prototype.sendThanks = function() {
-	this.connection.send({
-		"kind": "thanks"
 	});
 };
 
