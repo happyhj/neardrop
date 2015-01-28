@@ -13,33 +13,34 @@ FileSaver.prototype.init = function() {
 	this.fileInfo = null;
 	this.file = null;
 
+	this.store = null;
 	this.blockTranferContext = {};
-	
-	var requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
+};
 
-	// 파일시스템 초기화 작업
-	requestFileSystem(window.TEMPORARY ,1, function(fs){
-		// 파일 시스템에 존재하는 파일을 모두 지우기
-		(function removeAllFiles(fs) {
-			fs.root.getDirectory('/', {}, function(dirEntry){
-				var dirReader = dirEntry.createReader();
-				dirReader.readEntries(function(entries) {
-					for(var i = 0; i < entries.length; i++) {
-						var entry = entries[i];
-						// if (entry.isDirectory){
-						// 	console.log('Directory: ' + entry.fullPath);
-						// }
-						// else 
-						if (entry.isFile){
-						    entry.remove(function() {
-						    	console.log('File removed - '+ entry.fullPath);
-							}, this._errorHandler);
-						}
-					}
-				}.bind(this), this._errorHandler);
-			}.bind(this), this._errorHandler);
-		}.bind(this))(fs);
-	}.bind(this), this._errorHandler);
+FileSaver.prototype.openDB = function() {
+	// In the following line, you should include the prefixes of implementations you want to test.
+	window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+	// DON'T use "var indexedDB = ..." if you're not in a function.
+	// Moreover, you may need references to some window.IDB* objects:
+	window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction || window.msIDBTransaction;
+	window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange || window.msIDBKeyRange
+	// (Mozilla has never prefixed these objects, so we don't need window.mozIDB*)
+
+	if (!window.indexedDB) {
+	    window.alert("Your browser doesn't support a stable version of IndexedDB. Such and such feature will not be available.")
+	}
+
+	var request = window.indexedDB.open("neardrop");
+	request.onerror = function(event) {
+		alert("Why didn't you allow my web app to use IndexedDB?!");
+	};
+	request.onsuccess = function(event) {
+		this.db = request.result;
+	};
+
+	this.db.onerror = function(event) {
+		alert("Database error: " + event.target.errorCode);
+	};
 };
 
 FileSaver.prototype.initListeners = function() {
@@ -61,11 +62,8 @@ FileSaver.prototype.initListeners = function() {
 
 // 파일을 지정해주는 것은 DataController의 작업
 FileSaver.prototype.setFile = function(fileInfo, chunkSize, blockSize) {
-	console.log("filesaver file: "+fileInfo.name);
 	this.fileInfo = fileInfo;
 	this.fileInfo.sizeStr = getSizeExpression(fileInfo.size);
-
-	console.log("blockTranferContext file: "+fileInfo.name);
 
 	this.blockTranferContext = {
 		"chunkSize": chunkSize,
@@ -78,43 +76,32 @@ FileSaver.prototype.setFile = function(fileInfo, chunkSize, blockSize) {
 		"blockIndex": undefined // 현재 받고 있는 블록의 인덱스
 	};
 
-	console.log(chunkSize, blockSize);
 	this._initBlockMap();
-	console.log("_initBlockMap after: "+fileInfo.name);
+	
 	// 저장할 준비
 	this.readyToWrite();
 };
 
 FileSaver.prototype.readyToWrite = function() {
-	console.log("filesystem ready");
-	// fileWriter를 만들어낸다. 
-	var requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
+	var db = this.openDB();
+	
+	// create index
+	db.createObjectStore("fileSaver").createIndex("blocks", "blocks", { unique: false });
 
-	console.log("[FileSaver :init] requesting FileSystem");
-	requestFileSystem(window.TEMPORARY, this.fileInfo.size, function(fileName, fs){
-		console.log("[FileSaver :init] creating blank file in FileSystem");
-		fs.root.getFile(fileName, {create: true}, function(fileEntry){
-			this.file = fileEntry;
-			this.file.createWriter(function(fileWriter) {
-				this._fileWriter = fileWriter;
-				this._fileWriter.onwriteend = function() {
-					this.chunkBlock = [];
-					this.blockTranferContext.receivedBlockCount++;
-					// blockMap 업데이트하기
-					delete this.blockTranferContext.blockMap[""+this.blockTranferContext.blockIndex];	
-					//this.blockTranferContext.blockMap[""+this.blockTranferContext.blockIndex] = true;								
-					// 파일 쓰기가 종료되면 chunkSaved 이벤트를 trigger 한다.
-					console.log('Block saved!');		
-					this.emit('blockSaved', this.blockTranferContext.blockIndex);
-				}.bind(this);
-				
-				// 저장을 위한 사전작업이 끝났으니 팝업창을 띄워 동의를 구한다.
-				// FileSaver -> DataController -> UIController가 이벤트를 받는다.		
-				console.log("[FileSaver: event] fileSavePrepared triggered");
-				this.emit('fileSavePrepared', this.fileInfo);
-			}.bind(this));	
-		}.bind(this), this._errorHandler);	
-	}.bind(this, this.fileInfo.name), this._errorHandler);
+	var tx = this.db.transaction("fileSaver", IDBTransaction.READ_WRITE)
+	var fileStore = tx.objectStore("fileSaver");
+	var emptyStore = fileStore.index("fileSaver").openCursor();
+	
+	emptyStore.onsuccess = function(event) {
+		var cursor = event.target.result;
+		if (cursor) {
+		    emptyStore.delete(cursor.primaryKey);
+		    cursor.continue;
+		}
+	}
+
+	this.store = fileStore;
+	this.emit('fileSavePrepared', this.fileInfo);
 }
 
 FileSaver.prototype._initBlockMap = function() {
@@ -149,10 +136,10 @@ FileSaver.prototype.saveChunk = function(chunk) {
 	var isLastChunkInFile = this.isLastChunkInFile(); 
 
 	if (isLastChunkInBlock || isLastChunkInFile) {
+
 		var blob = new Blob(this.chunkBlock);
-		this._fileWriter.seek(blockIndex * blockSize * chunkSize);
-		this._fileWriter.write(blob);
-		// writeEnd시 blockSaved 이벤트 발생
+		this.store.put(blob, "block"+blockIndex);
+		this.emit('blockSaved');
 		return;
 	}
 	// 일반적인 상황에서는
@@ -192,29 +179,3 @@ FileSaver.prototype._simulatedClick = function(ele) {
 	evt.initMouseEvent("click", true, true, null,0, 0, 0, 80, 20, false, false, false, false, 0, null);
 	ele.dispatchEvent(evt);
 };
-
-FileSaver.prototype._errorHandler = function(e) {
-	var msg = '';
-	switch (e.name) {
-	case FileError.QUOTA_EXCEEDED_ERR:
-	  msg = 'QUOTA_EXCEEDED_ERR';
-	  break;
-	case FileError.NOT_FOUND_ERR:
-	  msg = 'NOT_FOUND_ERR';
-	  break;
-	case FileError.SECURITY_ERR:
-	  msg = 'SECURITY_ERR';
-	  break;
-	case FileError.INVALID_MODIFICATION_ERR:
-	  msg = 'INVALID_MODIFICATION_ERR';
-	  break;
-	case FileError.INVALID_STATE_ERR:
-	  msg = 'INVALID_STATE_ERR';
-	  break;
-	default:
-	  msg = 'Unknown Error';
-	  break;
-	};
-	msg += '\n' + e.message;
-	console.log('Error: ' + msg);
-}

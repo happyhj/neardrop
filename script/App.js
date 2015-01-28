@@ -8,7 +8,7 @@ function App() {
 }
 
 App.prototype.init = function() {
-	this.dataController = new DataController({
+	this.peerController = new PeerController({
 		'CHUNK_SIZE': CHUNK_SIZE,  // 16000 byte per binary chunk
 		'BLOCK_SIZE': BLOCK_SIZE, // 64 binary chunks per one block
 	});
@@ -20,7 +20,7 @@ App.prototype.init = function() {
 App.prototype.initListeners = function() {
 	// 컨트롤러간에 정보가 오가는 경우 이 곳에서 처리한다
 	this.userController.on('peerCreated', function(peer) {
-		this.dataController.setPeer(peer);
+		this.peerController.setPeer(peer);
 	}.bind(this));
 	this.userController.on('adduser', this.uiController.addAvatar.bind(this.uiController));
 	this.userController.on('removeuser', this.uiController.removeAvatar.bind(this.uiController));
@@ -34,11 +34,11 @@ App.prototype.initListeners = function() {
 		var opponent = this.userController.getNeighborByEl(targetEl);
 		
 		var yesCallback = function(){ // YES 를 눌렀을 경우 실행하는 함수.
-			this.dataController.connect(opponent, file);
+			this.peerController.connect(opponent, file);
 		}.bind(this);
 
 		var noCallback = function(){ // NO 를 눌렀을 경우 실행하는 함수.
-			this.dataController.sendRefusal();
+			console.log("파일 전송을 취소하였습니다.");
 		}.bind(this);
 
 		var fileNameTokens = file.name.split(".");
@@ -59,20 +59,20 @@ App.prototype.initListeners = function() {
 			
 	}.bind(this));
 
-	this.dataController.on('fileSavePrepared', function(file) {
+	this.peerController.on('fileSavePrepared', function(file) {
 		// 내가 받는 측이므로 수신수락에 대한 질문을 한다.
-		var opponentId = this.dataController.connection.peer;
+		var opponentId = this.peerController.connection.peer;
 		var opponent = this.userController.neighbors[opponentId]
 
 		// 수락한다면 바로 달라고 요청을 보낸다. 
 		var yesCallback = function(){ // YES 를 눌렀을 경우 실행하는 함수.
-			this.dataController.transferStart = Date.now();
-			this.dataController.requestBlockTransfer();
+			this.peerController.transferStart = Date.now();
+			this.peerController.dataController.requestBlockTransfer();
 			this.uiController.setFileInfo(file);
 		}.bind(this);
 		
 		var noCallback = function(){ // NO 를 눌렀을 경우 실행하는 함수.
-			this.dataController.sendRefusal();
+			this.peerController.sendRefusal();
 		}.bind(this);
 		
 		var fileNameTokens = file.name.split(".");
@@ -93,31 +93,31 @@ App.prototype.initListeners = function() {
 			
 	}.bind(this));
 	
-	this.dataController.on('fileSendPrepared', function(fileInfo) {
+	this.peerController.on('fileSendPrepared', function(fileInfo) {
 		this.uiController.setFileInfo(fileInfo);
 	}.bind(this));
 
-	this.dataController.on('showProgress', function(peer, dir) {
-		this.uiController.setProgressSource(this.dataController);
+	this.peerController.on('showProgress', function(peer, dir) {
+		this.uiController.setProgressSource(this.peerController.dataController);
 		this.uiController.showProgress(peer, dir);
 	}.bind(this));
 
-	this.dataController.on('updateProgress', function(progress) {
+	this.peerController.on('updateProgress', function(progress) {
 		this.uiController.updateProgress(progress);
 	}.bind(this));
 
-	this.dataController.on('transferEnd', function() {
+	this.peerController.on('transferEnd', function() {
 /*
 		console.log("트랜스퍼가 끝났으므로 : 초기화");
-		this.dataController.initTools();
-		this.dataController.initListeners();
+		this.peerController.initTools();
+		this.peerController.initListeners();
 */	
 		this.uiController.transferEnd();
 		
-//		this.dataController.fileSender.blockTranferContext = null;
-//		this.dataController.fileSaver.blockTranferContext = null;
+//		this.peerController.fileSender.blockTranferContext = null;
+//		this.peerController.fileSaver.blockTranferContext = null;
 
-//		this.dataController.initTools();
-//		this.dataController.initListenersOnFileDelegate();
+//		this.peerController.initTools();
+//		this.peerController.initListenersOnFileDelegate();
 	}.bind(this));
 }

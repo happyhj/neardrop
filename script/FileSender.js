@@ -17,7 +17,7 @@ FileSender.prototype.init = function() {
 };
 
 FileSender.prototype.initListeners = function() {
-	this.on("blockContextInitialized", this.sendDataChunk);
+	// this.on("blockContextInitialized", this.sendDataChunk);
 };
 
 FileSender.prototype.setFile = function(file, chunkSize, blockSize) {	
@@ -38,7 +38,7 @@ FileSender.prototype.setFile = function(file, chunkSize, blockSize) {
 		"sentChunkCount": 0,
 		"totalChunkCount": Math.ceil(file.size / chunkSize)
 	};
-
+	console.log("fileSender setfile complete");
 	this.emit('fileSendPrepared', this.fileInfo);
 };
 
