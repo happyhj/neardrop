@@ -98,7 +98,7 @@ UIController.prototype.drawWave = function() {
 
 UIController.prototype._resizeHandler = function() {
 	this.drawWave();
-	this.setStreamLoaderContainer();
+	this.setStreamContainer();
 }
 
 UIController.prototype.addAvatar = function(avatar, isMe) {
@@ -145,15 +145,15 @@ UIController.prototype.addAvatar = function(avatar, isMe) {
 	avatar.setDefaultSpring();
 	avatar.spring.setEndValue(2);
 
-	this.setStreamLoaderContainer();
+	this.setStreamContainer();
 };
 
 UIController.prototype.removeAvatar = function(avatar) {
 	avatar.el.parentNode.removeChild(avatar.el);
-	this.setStreamLoaderContainer();
+	this.setStreamContainer();
 };
 
-UIController.prototype.setStreamLoaderContainer = function() {
+UIController.prototype.setStreamContainer = function() {
 	var userAvatar = document.querySelector(".user-container>.avatar");
 	if(!userAvatar) {
 		return;
@@ -162,23 +162,23 @@ UIController.prototype.setStreamLoaderContainer = function() {
 	var y1 = getPosition(userAvatar).y;
 	
 	var neighborAvatars = document.querySelectorAll(".neighbor-container>.avatar");
-	var rotateSLContainer = function(neighborAvatar){
+	var rotateStreamContainer = function(neighborAvatar){
 		var x2 = getPosition(neighborAvatar).x;
 		var y2 = getPosition(neighborAvatar).y;
 
 		var theta = Math.atan((x2-x1)/Math.abs(y2-y1));
 		var slide = Math.sqrt((Math.pow(x2-x1,2)+Math.pow(y2-y1,2)))*1.05;
 
-		var streamLoaderContainer = neighborAvatar.querySelector(".stream-loader-container");
-		streamLoaderContainer.setAttribute("style", "-webkit-transform: rotate("+(theta*160/Math.PI)+"deg);height:"+slide+"px;");
+		var streamContainer = neighborAvatar.querySelector(".stream-loader-container");
+		streamContainer.setAttribute("style", "-webkit-transform: rotate("+(theta*160/Math.PI)+"deg);height:"+slide+"px;");
 		
 		// Container의 크기 변화에 맞춰 내부 Canvas 크기 변경하기
-		if(this.streamLoader)
-			this.streamLoader.updateSize();
+		if(this.stream)
+			this.stream.updateSize();
 			
 	}.bind(this);
 
-	[].forEach.call(neighborAvatars, rotateSLContainer);
+	[].forEach.call(neighborAvatars, rotateStreamContainer);
 };
 
 // 나중에 파일 정보를 보여주기 위해서 들고 있게 한다.
@@ -193,13 +193,13 @@ UIController.prototype.setProgressSource = function(progressSource) {
 UIController.prototype.showProgress =  function(peerId, dir) {
 	// 프로그래스 바를 만들기 
 	this.opponentDiv = document.getElementById(peerId);
-	var progressContainer = this.opponentDiv.querySelector(".progress-container");
-	var streamLoaderContainer = this.opponentDiv.querySelector(".stream-loader-container");
+	var pieContainer = this.opponentDiv.querySelector(".progress-container");
+	var streamContainer = this.opponentDiv.querySelector(".stream-loader-container");
 	
 	//  fileSaver 나 fileSender 의 blockcontext객체 레퍼런스를 가져온다.
 	this.pie = new PieLoader({
 //	this.loader = new PieLoader({
-		container: progressContainer
+		container: pieContainer
 		, color: 'rgba(255,255,255,.97)'
 		, fill: false
 		, sourceObject: this.progressSource
@@ -208,18 +208,14 @@ UIController.prototype.showProgress =  function(peerId, dir) {
 		}
 	});
 	this.pie.startAnimation();
-	
-//	this.loader.startAnimation();
-	
-	var streamLoaderInitParam = {
-		containerEl: streamLoaderContainer,
-		direction: dir
-	};
 		
-	this.streamLoader = new StreamLoader(streamLoaderInitParam);
+	this.stream = new Stream({
+		containerEl: streamContainer,
+		direction: dir
+	});
 	
-	this.streamLoader.on("loadEnd", function() {
-		this.streamLoader = null;
+	this.stream.on("loadEnd", function() {
+		this.stream = null;
 	}.bind(this));
 	
 	var container = this.opponentDiv;
@@ -251,7 +247,7 @@ UIController.prototype.updateProgress = function() {
 };
 
 UIController.prototype.transferEnd = function() {
-	this.streamLoader.finishStream();
+	this.stream.finishStream();
 	
 	var transferStart = this.progressSource.transferStart;
 	var transferEnd = Date.now();
@@ -266,8 +262,7 @@ UIController.prototype.transferEnd = function() {
 	var container = this.opponentDiv;
 	container.querySelector(".avatar-pic>.message").innerHTML = "";
 	container.setAttribute("class", "avatar");					
-//	this.loader.stopAnimation();
-//	this.loader.destroyLoader();
+
 	this.pie.stopAnimation();
 	this.pie.destroyLoader();
 	
