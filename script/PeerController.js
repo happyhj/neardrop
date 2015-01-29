@@ -102,8 +102,10 @@ PeerController.prototype.setDataController = function() {
 PeerController.prototype.setEventRepeater = function() {
 	// 하부 컨트롤러에서 올라오는 이벤트를 내가 다시 한 번 실행한다.
 	// this.repeat('event name', from where)
+	this.repeat('error', this.peer);
 	this.repeat('fileSendPrepared', this.dataController);
 	this.repeat('fileSavePrepared', this.dataController);
+	this.repeat('opponentRefused', this.dataController);
 	this.repeat('showProgress', this.dataController);
 	this.repeat('updateProgress', this.dataController);
 	this.repeat('close', this.connection);

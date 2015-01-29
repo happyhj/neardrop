@@ -104,7 +104,8 @@ SendController.prototype.askOpponent = function(file) {
 };
 
 SendController.prototype.getRefused = function() {
-	// TODO: 거절되었다는 메시지를 띄워준다
+	// 거절되었다는 메시지를 띄워준다
+	this.emit('opponentRefused');
 	console.log("당신은 바람맞았습니다.");
 	this.connection.close();
 };
