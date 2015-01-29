@@ -361,3 +361,17 @@ line-height: 22px;
 	width: 100%;
 	height: 100%;	
 }
+.toast {
+	display: block;
+	margin: 0 auto;
+	bottom: 0px;
+	background-color: black;
+	font: white;
+	font-size: 20px;
+	text-align: center;
+	transition: all .6s linear;
+}
+
+.toast.hide {
+	opacity: 0;
+}

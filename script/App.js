@@ -13,15 +13,23 @@ App.prototype.init = function() {
 		'BLOCK_SIZE': BLOCK_SIZE, // 64 binary chunks per one block
 	});
 	this.userController = new UserController({url: 'http://neardrop.heej.net/nearbyuser.php'});
-		
+	// Phase 1 start
 	this.uiController = new UIController();
 };
 
 App.prototype.initListeners = function() {
 	// 컨트롤러간에 정보가 오가는 경우 이 곳에서 처리한다
+	// if Phase 1 end, Phase 2 start
+	this.uiController.on('templatesLoaded', function() {
+		this.userController.connectPeerServer();
+	}.bind(this));
+	// if Phase 2 end, Phase 3 start
 	this.userController.on('peerCreated', function(peer) {
 		this.peerController.setPeer(peer);
+		this.uiController.showUI();
+		this.uiController.toast("Peer Created");
 	}.bind(this));
+	// 아래의 이벤트들은 반복적으로 실행될 이벤트들.
 	this.userController.on('adduser', this.uiController.addAvatar.bind(this.uiController));
 	this.userController.on('removeuser', this.uiController.removeAvatar.bind(this.uiController));
 	this.uiController.on('fileDropped', function(e) {
@@ -35,6 +43,7 @@ App.prototype.initListeners = function() {
 		
 		var yesCallback = function(){ // YES 를 눌렀을 경우 실행하는 함수.
 			this.peerController.connect(opponent, file);
+			this.uiController.toast("Waiting Opponent's response");
 		}.bind(this);
 
 		var noCallback = function(){ // NO 를 눌렀을 경우 실행하는 함수.
@@ -97,6 +106,10 @@ App.prototype.initListeners = function() {
 		this.uiController.setFileInfo(fileInfo);
 	}.bind(this));
 
+	this.peerController.on('opponentRefused', function() {
+		this.uiController.toast("Opponent Refused");
+	}.bind(this))
+
 	this.peerController.on('showProgress', function(peer, dir) {
 		this.uiController.setProgressSource(this.peerController.dataController);
 		this.uiController.showProgress(peer, dir);
@@ -106,6 +119,10 @@ App.prototype.initListeners = function() {
 		this.uiController.updateProgress(progress);
 	}.bind(this));
 
+	this.peerController.on('error', function(err) {
+		this.uiController.toast("ERROR: "+err.type+" occured");
+	}.bind(this));
+	
 	// 아예 Connection이 끊길 때 UI 변화를 주는 건 어떨까?
 	this.peerController.on('close', function() {
 		this.uiController.transferEnd();

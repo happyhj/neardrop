@@ -18,12 +18,13 @@ UIController.prototype.init = function() {
 	this.opponentDiv = null;
 
 	// 템플릿을 외부 파일로부터 로딩
+	this.templatesDic = {
+		me: false,
+		neighbor: false,
+		sender: false,
+		receiver: false
+	};
 	this.loadTemplates();
-
-	// 첫 wave를 그리고 
-	this.drawWave();
-	// 화면사이즈가 바뀔 때 마다 다시 wave를 그려주는 이벤트핸들러를 등록한다.
-	window.addEventListener("resize",this._resizeHandler.bind(this));
 };
 
 UIController.prototype.loadTemplates = function() {
@@ -31,20 +32,39 @@ UIController.prototype.loadTemplates = function() {
 
 	$.get('./templates/avatar-me.html', function (data) {
 		this.avatarTemplateMe = _.template(data);
+		this.templateLoaded('me');
 	}.bind(this), 'html');
 	$.get('./templates/avatar-neighbor.html', function (data) {
 		this.avatarTemplateNeighbor = _.template(data);
+		this.templateLoaded('neighbor');
 	}.bind(this), 'html');
 	$.get('./templates/confirm-popup-sender.html', function (data) {
 		this.confirmTemplateSender = _.template(data);
+		this.templateLoaded('sender');
 	}.bind(this), 'html');
 	$.get('./templates/confirm-popup-receiver.html', function (data) {
-		console.log("UIController init: loadTemplates - confirm-popup-receiver.html - 끝");
 		this.confirmTemplateReceiver = _.template(data);
-		console.log(this);
+		this.templateLoaded('receiver');
 	}.bind(this), 'html');
 
 	console.log("UIController init: loadTemplates - 끝");
+};
+
+UIController.prototype.templateLoaded = function(type) {
+	this.templatesDic[type] = true;
+	// 하나라도 false라면 return;
+	for (key in this.templatesDic) {
+		if (this.templatesDic[key] == false)
+			return;
+	}
+	this.emit('templatesLoaded');
+};
+
+UIController.prototype.showUI = function() {
+	// 첫 wave를 그리고 
+	this.drawWave();
+	// 화면사이즈가 바뀔 때 마다 다시 wave를 그려주는 이벤트핸들러를 등록한다.
+	window.addEventListener("resize",this._resizeHandler.bind(this));
 };
 
 UIController.prototype.drawWave = function() {
@@ -246,7 +266,26 @@ UIController.prototype.updateProgress = function() {
 	container.querySelector(".avatar-pic>.message").innerHTML = expression;
 };
 
+UIController.prototype.toast = function(msg) {
+	console.log("TOAST: "+msg);
+	var instance = document.createElement("span");
+	instance.setAttribute('class', "toast");
+	instance.innerHTML = msg;
+	document.body.appendChild(instance);
+
+	setTimeout(function(instance) {
+		instance.setAttribute('class', "toast hide");
+		setTimeout(function(instance) {
+			document.body.removeChild(instance);
+		}.bind(this, instance), 1000)
+	}.bind(this, instance), 2000)
+};
+
 UIController.prototype.transferEnd = function() {
+	if (!this.stream) {
+		// 연결 거절로 아무런 UI가 생성되지 않았을 경우
+		return;
+	}
 	this.stream.finishStream();
 	
 	var transferStart = this.progressSource.transferStart;

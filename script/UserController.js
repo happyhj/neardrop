@@ -2,27 +2,29 @@ function UserController(args) {
 	if (!(this instanceof UserController)) return new UserController(args);
 	EventEmitter.call(this);
 
-	this.init(args.url);
+	this.url = args.url;
+
+	this.init();
 
 	// 종료시 호출 요청
 	window.onbeforeunload = this._destory.bind(this);
 }
 inherits(UserController, EventEmitter);
 
-UserController.prototype.init = function(url) {
+UserController.prototype.init = function() {
 	// Peer 연결시 초기화 됨
 	this.me = null;
+	this.peer = null;
 	// Neighbors = id : neighbor 객체 map
 	this.neighbors = {};
+};
 
+UserController.prototype.connectPeerServer = function() {
 	// peer 객체
 	this.peer = new Peer({
 		key: '4uur7cd24jzwipb9'
 		, debug: true
 	});
-
-	// neighbors 정보를 받아올 서버 주소
-	this.url = url;
 
 	// 내 peer id 생성
 	this.peer.on('open', function(id) {
