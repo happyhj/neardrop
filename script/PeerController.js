@@ -72,6 +72,7 @@ PeerController.prototype.setConnectionListener = function() {
 		this.dataController = null;
 		// 연결이 끊어졌으니 새로운 연결을 기다림
 		this.listen();
+		this.emit('close');
 	}.bind(this));
 }
 
@@ -108,7 +109,6 @@ PeerController.prototype.setEventRepeater = function() {
 	this.repeat('opponentRefused', this.dataController);
 	this.repeat('showProgress', this.dataController);
 	this.repeat('updateProgress', this.dataController);
-	this.repeat('close', this.connection);
 };
 
 PeerController.prototype.sendRefusal = function(conn) {
