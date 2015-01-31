@@ -12,6 +12,9 @@ SaveController.prototype.init = function() {
 	this.transferStart = null;
 	this.transferEnd = null;
 
+	this.sendEnd = false;
+	this.fileDownloaded = false;
+
 	this.fileSaver = new FileSaver();
 
 	this.connection.on('data', function(message){
@@ -28,6 +31,13 @@ SaveController.prototype.init = function() {
 	this.fileSaver.on('nextBlock', function(blockIdx) {
 		this.requestBlockTransfer(blockIdx);
 		this.emit('updateProgress', this.getProgress());
+	}.bind(this));
+
+	this.fileSaver.on('fileDownloadEnd', function() {
+		this.fileDownloaded = true;
+		if (this.sendEnd) {
+			this.sendThanks();
+		}
 	}.bind(this));
 
 	this.repeat('fileSavePrepared', this.fileSaver);
@@ -51,12 +61,14 @@ SaveController.prototype._handleMessage = function(message) {
 				this.fileSaver.setFile(fileInfo, chunkSize, blockSize);
 				break;
 			case "fileEnd": // 송신자가 더이상 줄 청크가 없다고 한다. 감사의 인사를 보낸다.
-				// 이건 레알 인사치레. 사실 파일만 다 받으면 TransferEnd이벤트가 발생해서
-				// 파일 다운받고 UI 처리하고 다 한다.
-				console.log("thanks");
-				this.connection.send({
-					"kind": "thanks"
-				});
+				// 파일 청크를 받기 전에 fileEnd가 나면 에러.
+				// 청크 다운로드 완료와 fileEnd를 동시 검증해야 한다.
+				this.sendEnd = true;
+				console.log("FileEnd");
+				if (this.fileDownloaded) {
+					this.sendThanks();
+				}
+				
 				break;
 			
 			default:
@@ -86,6 +98,13 @@ SaveController.prototype.requestBlockTransfer = function(blockIdx) {
 		"blockIndex": blockIdx
 	});
 };
+
+SaveController.prototype.sendThanks = function() {
+	console.log("thanks");
+	this.connection.send({
+		"kind": "thanks"
+	});
+}
 
 SaveController.prototype.getProgress = function() {
 	var context = this.fileSaver.blockTranferContext;
