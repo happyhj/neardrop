@@ -94,15 +94,16 @@ FileSender.prototype._sliceBlob = function(blob, start, end) {
 };
 
 FileSender.prototype.sendDataChunk = function(conn) {
+	console.log("SEND DATA CHUNK");
 	var chunkIndex = this.blockTranferContext.chunkIndexToSend,
 		chunkSize = this.blockTranferContext.chunkSize;
 
 	// 
-	if(this.blockTranferContext.blockSize <= chunkIndex) {
+	if (this.blockTranferContext.blockSize <= chunkIndex) {
 		return; 
 	}
 	var chunkToSend = this.chunks[chunkIndex];
-	if(conn && conn.open===true) {
+	if (conn) {
 		conn.send(chunkToSend);
 		this.blockTranferContext.chunkIndexToSend++;
 		this.blockTranferContext.sentChunkCount++;

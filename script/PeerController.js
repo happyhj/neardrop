@@ -31,22 +31,23 @@ PeerController.prototype.connect = function(opponent, file) {
 
 	this.isSender = true;
 	this.connection = this.peer.connect(opponent.id);
-	this.afterConnection();
 };
 
 // 수신자는 이 함수를 통해 connection을 얻는다.
 PeerController.prototype.listen = function() {
 	// 연결이 들어오기를 기다린다
+	this.isSender = false;
 	this.peer.removeAllListeners('connection');
 	this.peer.on('connection', function(dataConnection) {
-		this.isSender = false;
 		this.connection = dataConnection;
 		this.afterConnection();
+		this.sendback();
 	}.bind(this));
 };
 
 PeerController.prototype.sendback = function() {
 	// 추가적인 연결이 들어오는 것을 막는다
+	console.log("sendback");
 	this.peer.removeAllListeners('connection');
 	this.peer.on('connection', function(dataConnection) {
 		dataConnection.on('open', this.sendRefusal.bind(this, dataConnection));
@@ -60,7 +61,6 @@ PeerController.prototype.afterConnection = function() {
 	}
 
 	this.setConnectionListener();
-	this.sendback();
 };
 
 PeerController.prototype.setConnectionListener = function() {
@@ -80,6 +80,7 @@ PeerController.prototype.setDataController = function() {
 	if (this.isSender === null) {
 		console.error("Role undefined");
 	}
+	console.log(this.isSender);
 	if (this.isSender) {
 		// 내가 송신자라면
 		this.dataController = new SendController({

@@ -39,6 +39,7 @@ FileSaver.prototype.init = function() {
 				}.bind(this), this._errorHandler);
 			}.bind(this), this._errorHandler);
 		}.bind(this))(fs);
+		
 	}.bind(this), this._errorHandler);
 };
 
@@ -46,6 +47,7 @@ FileSaver.prototype.initListeners = function() {
 	this.on('blockSaved', function() {
 		if(this.blockTranferContext.receivedBlockCount === this.blockTranferContext.totalBlockCount) {
 			console.log("쳥크 다바다따!!: "+Date.now());
+			this.emit('fileDownloadEnd');
 			this.downloadFile();
 			// this.off("blockSaved", blockSavedCallback);	
 		}
