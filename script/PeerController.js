@@ -31,6 +31,7 @@ PeerController.prototype.connect = function(opponent, file) {
 
 	this.isSender = true;
 	this.connection = this.peer.connect(opponent.id);
+	this.afterConnection();
 };
 
 // 수신자는 이 함수를 통해 connection을 얻는다.
