@@ -3,8 +3,18 @@ var CHUNK_SIZE = 160000;
 var BLOCK_SIZE = 8;
 
 function App() {
-	this.init();
-	this.initListeners();	
+	if(this.isWebRTCSupported()){
+		this.init();
+		this.initListeners();	
+	} else {
+		this.showUnsupportedContent();
+	}
+}
+App.prototype.isWebRTCSupported = function() {
+	return !!window.webkitRTCPeerConnection || !!window.mozRTCPeerConnection;
+};
+App.prototype.showUnsupportedContent = function() {
+	document.querySelector(".unsupportedContent").style.display = "block";	
 }
 
 App.prototype.init = function() {

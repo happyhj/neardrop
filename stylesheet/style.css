@@ -9,7 +9,9 @@
     4.  Avatar
     5.  Popups
     6.  Others
+   	7.  Unsupported
 */
+
 
 /* ==========================================================================
    1. General - Setting up containers
@@ -29,6 +31,8 @@ body, html {
 	min-height: 400px;
 	
 	overflow: hidden;
+	
+	background-color: #272d38;
 }
 
 .neighbor-container > .avatar > h1
@@ -71,7 +75,7 @@ body, html {
 
 .wave > svg.show {
 	transform: scale3d(1, 1, 1); 
-	opacity: 1;	
+	opacity: .66;	
 }
 
 
@@ -374,4 +378,49 @@ line-height: 22px;
 
 .toast.hide {
 	opacity: 0;
+}
+
+/* ==========================================================================
+   7. Unsupported
+   ========================================================================== */
+	
+.unsupportedContent {
+display: none;
+margin: auto;
+max-width: 480px;
+padding: 24px;
+position: relative;
+text-align: center;
+}
+.neardropLogo {
+background-image: url("./image/neardropLogo_light.png");
+height: 130px;
+width: 148px;
+-webkit-user-drag: none;
+margin-top: 70px;
+background-size: contain;
+background-repeat: no-repeat;
+display: inline-block;
+}
+.unsupportedText {
+font-size: 1.8em;
+line-height: 1.5em;	
+}
+.buttonContainer .downloadLink {
+display: inline-block;	
+}
+.downloadLink {
+background: #346ac3;
+border-radius: 2px;
+cursor: pointer;
+display: inline-block;
+font-size: 1.2em;
+font-weight: bold;
+margin-top: 0;
+padding: 12px 72px;
+text-transform: uppercase;
+}
+button {
+border: 0;
+color: white;
 }
