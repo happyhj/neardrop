@@ -5,14 +5,19 @@
 </head>
 <body>
     <style id="confirmCentralize"></style>
-    
+    <div class="unsupportedContent">
+	    <div class="neardropLogo"></div>
+	    <p class="unsupportedText">Neardrop only works in Google Chrome. More browsers coming soon.</p>
+	    <div class="buttonContainer">
+		    <button class="downloadLink" onclick="location.href='https:\/\/www.google.com\/chrome\/browser\/?hl\x3den'">Download Google Chrome</button>
+		</div>
+	</div>
     <div class="wave"><svg></svg></div>
     <div class="neighbor-container"></div>
     <div class="user-container"></div>
     <div class="github-container">
     	<a href="https://github.com/happyhj/neardrop" target="_blank"></a>
     </div>
-
     <!-- Script Libraries -->
     <script src="./lib/jquery-2.1.1.min.js"></script>
     <script src="./lib/rebound.min.js"></script> 
@@ -23,6 +28,7 @@
     <script src="./lib/peer_eventemitter.js"></script>
     
     <script src="./lib/playrtc.js"></script>
+
     <!-- <script src="./lib/peer_wrapper_for_playrtc.js"></script> -->
     <script src="./lib/playrtc_wrapper_dataconnection.js"></script>
     <script src="./lib/playrtc_wrapper_peer.js"></script>
