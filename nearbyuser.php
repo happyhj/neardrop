@@ -33,7 +33,7 @@ if($cmd == "getNeighbors") {
 	
 	// 가까운 사람들을 응답으로 반환한다.
 	$response = array();
-	$result = mysqli_query($con,"SELECT * FROM user WHERE sqrt(pow(abs(longitude-".$longitude."),2)+pow(abs(latitude-".$latitude."),2))<0.3 LIMIT 6");
+	$result = mysqli_query($con,"SELECT * FROM user WHERE sqrt(pow(abs(longitude-".$longitude."),2)+pow(abs(latitude-".$latitude."),2))<0.001 LIMIT 6");
 	while($row = mysqli_fetch_array($result)) {
 		if($id!="\"".$row["id"]."\"") {
 			$user = array();
