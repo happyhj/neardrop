@@ -32,6 +32,7 @@ PeerController.prototype.connect = function(opponent, file) {
 	this.isSender = true;
 	this.connection = this.peer.connect(opponent.id);
 	this.afterConnection();
+	this.sendback();
 };
 
 // 수신자는 이 함수를 통해 connection을 얻는다.
@@ -115,6 +116,7 @@ PeerController.prototype.setEventRepeater = function() {
 
 PeerController.prototype.sendRefusal = function(conn) {
 	conn = conn || this.connection;
+	console.log("거절 메시지 전송 : "+conn.peer)
 	conn.send({
 		"kind": "refusal"
 	});

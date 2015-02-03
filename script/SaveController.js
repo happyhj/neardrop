@@ -45,7 +45,7 @@ SaveController.prototype.init = function() {
 
 SaveController.prototype._handleMessage = function(message) {
 	if( message.byteLength !== undefined ) { // ArrayBuffer 가 도착한 것
-		console.log("Received ByteLength : "+message.byteLength);
+		// console.log("Received ByteLength : "+message.byteLength);
 		this.fileSaver.saveChunk(message);
 	}
 	else { // JSON이 도착한 것 

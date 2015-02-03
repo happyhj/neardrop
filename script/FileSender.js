@@ -71,7 +71,7 @@ FileSender.prototype.initBlockContext = function(blockIndex) {
 				this.chunks[idx] = chunk;
 			}
 		}
-		console.log('Block Context Initialized!');
+		// console.log('Block Context Initialized!');
 		// 이 이벤트는 데이터 컨트롤러가 받는다
 		this.emit('blockContextInitialized');
 	}.bind(this);
@@ -94,7 +94,6 @@ FileSender.prototype._sliceBlob = function(blob, start, end) {
 };
 
 FileSender.prototype.sendDataChunk = function(conn) {
-	console.log("SEND DATA CHUNK");
 	var chunkIndex = this.blockTranferContext.chunkIndexToSend,
 		chunkSize = this.blockTranferContext.chunkSize;
 
