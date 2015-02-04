@@ -139,11 +139,15 @@ UIController.prototype.addAvatar = function(avatar, isMe) {
 		overArea.addEventListener('dragenter', function(e) {
 	        e.stopPropagation();
 	        e.preventDefault();	
-	        if(e.target.className !== "stream-loader-container")	{
+	        if(e.target.className !== "stream-loader-container") {
 				$overArea.addClass('dragover');
 				$dropMask.show();
 			}
 		}, false);
+		dropMask.addEventListener('dragover', function(e) {
+			// Allow Drop event
+			e.preventDefault();
+		});
 		dropMask.addEventListener('dragleave', function(e) {
 		    e.stopPropagation();
 			e.preventDefault();
@@ -155,7 +159,6 @@ UIController.prototype.addAvatar = function(avatar, isMe) {
 			e.preventDefault();
 			$overArea.removeClass('dragover');		
 			$dropMask.hide();
-			
 			// App으로 통제권을 넘긴다
 			this.emit('fileDropped', e);
 		}.bind(this),false);

@@ -31,9 +31,9 @@ SendController.prototype.init = function() {
 	
 	this.fileSender.on('transferEnd', function() {
 		console.log("fileEnd");
-		this.connection.send({
-			"kind": "fileEnd"
-		});
+		// this.connection.send({
+		// 	"kind": "fileEnd"
+		// });
 	}.bind(this));
 
 	this.repeat('fileSendPrepared', this.fileSender);

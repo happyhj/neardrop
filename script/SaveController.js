@@ -12,9 +12,6 @@ SaveController.prototype.init = function() {
 	this.transferStart = null;
 	this.transferEnd = null;
 
-	this.sendEnd = false;
-	this.fileDownloaded = false;
-
 	this.fileSaver = new FileSaver();
 
 	this.connection.on('data', function(message){
@@ -34,10 +31,7 @@ SaveController.prototype.init = function() {
 	}.bind(this));
 
 	this.fileSaver.on('fileDownloadEnd', function() {
-		this.fileDownloaded = true;
-		if (this.sendEnd) {
-			this.sendThanks();
-		}
+		this.sendThanks();
 	}.bind(this));
 
 	this.repeat('fileSavePrepared', this.fileSaver);
@@ -60,17 +54,7 @@ SaveController.prototype._handleMessage = function(message) {
 				var blockSize = message.blockSize;
 				this.fileSaver.setFile(fileInfo, chunkSize, blockSize);
 				break;
-			case "fileEnd": // 송신자가 더이상 줄 청크가 없다고 한다. 감사의 인사를 보낸다.
-				// 파일 청크를 받기 전에 fileEnd가 나면 에러.
-				// 청크 다운로드 완료와 fileEnd를 동시 검증해야 한다.
-				this.sendEnd = true;
-				console.log("FileEnd");
-				if (this.fileDownloaded) {
-					this.sendThanks();
-				}
-				
-				break;
-			
+
 			default:
 				debugger;
 				console.log("what a fuck...");
