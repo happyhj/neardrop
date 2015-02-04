@@ -115,6 +115,7 @@ PeerController.prototype.setEventRepeater = function() {
 };
 
 PeerController.prototype.sendRefusal = function(conn) {
+	// WARN: 이 코드 좀 위험
 	conn = conn || this.connection;
 	console.log("거절 메시지 전송 : "+conn.peer)
 	conn.send({

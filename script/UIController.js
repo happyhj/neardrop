@@ -136,7 +136,7 @@ UIController.prototype.addAvatar = function(avatar, isMe) {
 		var overArea = document.getElementById(avatar.id);
 		var dropMask = overArea.querySelector(".drop-mask");
 		
-		overArea.addEventListener('dragover', function(e) {
+		overArea.addEventListener('dragenter', function(e) {
 	        e.stopPropagation();
 	        e.preventDefault();	
 	        if(e.target.className !== "stream-loader-container")	{
