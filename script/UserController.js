@@ -229,7 +229,7 @@ UserController.prototype._destory = function() {
 		url: this.url,
 		type: 'POST',
 		data: {
-			cmd: "delete",
+			cmd: "deleteMe",
 			id: myId
 		},
 		headers: {
