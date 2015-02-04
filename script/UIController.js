@@ -218,12 +218,13 @@ UIController.prototype.showProgress =  function(peerId, dir) {
 	
 	//  fileSaver 나 fileSender 의 blockcontext객체 레퍼런스를 가져온다.
 	this.pie = new PieLoader({
-//	this.loader = new PieLoader({
+	// this.loader = new PieLoader({
 		container: pieContainer
 		, color: 'rgba(255,255,255,.97)'
 		, fill: false
 		, sourceObject: this.progressSource
-		, progressAdapter: function(source) { // 소스에서 progress 값을 리턴하는 함수를 만든다. progress 는 0 ~ 1 이다.
+		, progressAdapter: function(source) {
+			// 소스에서 progress 값을 리턴하는 함수를 만든다. progress 는 0 ~ 1 이다.
 			return source.getProgress();
 		}
 	});
