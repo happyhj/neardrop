@@ -49,14 +49,13 @@ SendController.prototype.sendFile = function(file) {
 };
 
 SendController.prototype._handleMessage = function(message) {
-
 	var kind = message.kind; // chunk, meta, request
 	switch (kind) {
 		case "refusal": // 수신자가 거부하였다. 연결을 종료한다.
 			this.getRefused();
 			break;
 		case "requestBlock":  // 수신자가 i번째 블록을 요청했다. 이를 통해 현재 블록전송 콘텍스트를 초기화 한다.
-			console.log("[Connection : _handleMessage] incoming message requestBlock");
+			// console.log("[Connection : _handleMessage] incoming message requestBlock");
 			console.log("blockIndex : " + message.blockIndex);	
 			var blockIndex = message.blockIndex;
 			

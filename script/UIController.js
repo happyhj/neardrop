@@ -136,7 +136,7 @@ UIController.prototype.addAvatar = function(avatar, isMe) {
 		var overArea = document.getElementById(avatar.id);
 		var dropMask = overArea.querySelector(".drop-mask");
 		
-		overArea.addEventListener('dragover', function(e) {
+		overArea.addEventListener('dragenter', function(e) {
 	        e.stopPropagation();
 	        e.preventDefault();	
 	        if(e.target.className !== "stream-loader-container")	{
@@ -266,7 +266,8 @@ UIController.prototype.updateProgress = function() {
 	container.querySelector(".avatar-pic>.message").innerHTML = expression;
 };
 
-UIController.prototype.toast = function(msg) {
+UIController.prototype.toast = function(msg, time) {
+	time = time || 2000;
 	console.log("TOAST: "+msg);
 	var instance = document.createElement("span");
 	instance.setAttribute('class', "toast");
@@ -278,7 +279,7 @@ UIController.prototype.toast = function(msg) {
 		setTimeout(function(instance) {
 			document.body.removeChild(instance);
 		}.bind(this, instance), 1000)
-	}.bind(this, instance), 2000)
+	}.bind(this, instance), time)
 };
 
 UIController.prototype.transferEnd = function() {
