@@ -99,6 +99,7 @@ SendController.prototype.askOpponent = function(file) {
 		, "chunkSize": this.CHUNK_SIZE
 		, "blockSize": this.BLOCK_SIZE
 	};
+	this.emit("message", "Waiting for Acception");
 	this.connection.send(message);
 };
 

@@ -53,7 +53,7 @@ App.prototype.initListeners = function() {
 		
 		var yesCallback = function(){ // YES 를 눌렀을 경우 실행하는 함수.
 			this.peerController.connect(opponent, file);
-			this.uiController.toast("Waiting Opponent's response", 7000);
+			this.uiController.toast("Waiting Opponent's response");
 		}.bind(this);
 
 		var noCallback = function(){ // NO 를 눌렀을 경우 실행하는 함수.
@@ -114,6 +114,10 @@ App.prototype.initListeners = function() {
 	
 	this.peerController.on('fileSendPrepared', function(fileInfo) {
 		this.uiController.setFileInfo(fileInfo);
+	}.bind(this));
+
+	this.peerController.on('message', function(msg, time) {
+		this.uiController.toast(msg, time);
 	}.bind(this));
 
 	this.peerController.on('opponentRefused', function() {
