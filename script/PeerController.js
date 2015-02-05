@@ -21,6 +21,16 @@ PeerController.prototype.setPeer = function(peer) {
 	this.peer = peer;
 	// 최초의 Listening
 	this.listen();
+
+	this.peer.on("playRTC_phase1", function() {
+		this.emit("message", "Connecting .    ", 4000);
+	}.bind(this));
+	this.peer.on("playRTC_phase2", function() {
+		this.emit("message", "Connecting . .  ", 4000);
+	}.bind(this));
+	this.peer.on("playRTC_phase3", function() {
+		this.emit("message", "Connecting . . .", 3000);
+	}.bind(this));
 };
 
 // 송신자는 이 함수를 통해 connection을 얻는다.
@@ -112,6 +122,7 @@ PeerController.prototype.setEventRepeater = function() {
 	this.repeat('opponentRefused', this.dataController);
 	this.repeat('showProgress', this.dataController);
 	this.repeat('updateProgress', this.dataController);
+	this.repeat('message', this.dataController);
 };
 
 PeerController.prototype.sendRefusal = function(conn) {
